@@ -39,6 +39,11 @@ const login = async (req, res) => {
         .json({ user, accessToken, role });
 };
 
+const logOut = async (req, res) => {
+    res.clearCookie("refreshToken", options);
+    res.status(200).json({ message: "Logged out successfully" });
+}
+
 
 const refreshAccessToken = async (req, res) => {
     const { refreshToken } = req.cookies;
@@ -68,4 +73,4 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
-export default { login, refreshAccessToken };
+export default { login, refreshAccessToken, logOut };

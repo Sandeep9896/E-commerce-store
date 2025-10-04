@@ -11,5 +11,6 @@ router.post("/register/customer", userController.register);
 router.post("/register/seller", sellerController.register);
 router.post("/register/admin", adminController.register); // Temporary route to create an admin
 router.post("/refresh-token", authController.refreshAccessToken);
+router.post("/logout", authController.logOut);
 
 export default router;
