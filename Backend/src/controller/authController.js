@@ -19,7 +19,7 @@ const login = async (req, res) => {
     let Model;
     if (role === "admin") Model = Admin;
     else if (role === "seller") Model = Seller;
-    else if (role === "customer") Model = User;
+    else if (role === "user") Model = User;
     else return res.status(400).json({ message: "Invalid role" });
 
     const user = await Model.findOne({ email }).select("+password");
@@ -32,6 +32,8 @@ const login = async (req, res) => {
     const accessToken = generateToken(user._id, "1d");
     user.refreshToken = refreshToken;
     await user.save();
+
+    req[role] = user;
 
     res
         .status(200)

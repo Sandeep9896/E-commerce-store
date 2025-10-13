@@ -9,6 +9,7 @@ const protect = (Model, keyName) => {
   return async (req, res, next) => {
     try {
       const authHeader = req.headers.authorization;
+      console.log("Auth Header:", authHeader);
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "Not authorized, no token" });
       }

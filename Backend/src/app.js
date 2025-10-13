@@ -10,13 +10,20 @@ import adminRoutes from './routes/adminRoute.js';
 import productRoutes from './routes/productRoute.js';
 
 // Load environment variables first
+
 dotenv.config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // your frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true, // if you send cookies or auth headers
+  })
+);
 // Middleware
 app.use(cookieParser());
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

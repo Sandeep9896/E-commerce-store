@@ -5,11 +5,21 @@ import cloudinary from "./cloudinary.js";
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "ecommerce", // folder name in Cloudinary
+    folder: "ecommerce/products", // folder name in Cloudinary
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });
 
+const storageAvatars = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "ecommerce/avatars", // folder name in Cloudinary
+        allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    },
+});
+
 const upload = multer({ storage });
 
-export default upload;
+const uploadAvatars = multer({ storage: storageAvatars });
+
+export { upload, uploadAvatars };

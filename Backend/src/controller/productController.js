@@ -1,7 +1,7 @@
 import Product from "../models/productModel.js";
 import Seller from "../models/sellerModel.js";
 
-const uploadProductImage = async (req, res) => {
+const uploadProduct = async (req, res) => {
 
     const { title, description, category, price, seller, } = req.body;
 
@@ -9,7 +9,7 @@ const uploadProductImage = async (req, res) => {
         return res.status(400).json({ message: "No file uploaded" });
     }
     try {
-       
+
         const imageData = req.files.map((file) => {
             return {
                 url: file.path,
@@ -31,4 +31,20 @@ const uploadProductImage = async (req, res) => {
     }
 };
 
-export default { uploadProductImage };
+const productPagination = async (req, res) => {
+    const allProducts = await Product.find().populate('seller', 'name');
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const products = allProducts.slice(start, end);
+
+    res.json({
+        products,
+        total: allProducts.length,
+        totalPages: Math.ceil(allProducts.length / limit),
+        currentPage: page,
+    });
+}
+export default { uploadProduct, productPagination };

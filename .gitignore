@@ -137,3 +137,7 @@ terraform.tfstate*
 *.bak
 *.orig
 *.rej
+
+#public
+/public/uploads
+/public/images

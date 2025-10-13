@@ -4,6 +4,10 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
+    avatar: {
+      url: String,
+      public_id: String,
+    },
     name: {
       type: String,
       required: true,
@@ -24,26 +28,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      default: "customer",
+      default: "user",
     },
     phone: {
       type: String,
       trim: true,
     },
-    address: [
-      {
-        fullName: String,
-        street: String,
-        city: String,
-        state: String,
-        postalCode: String,
-        country: String,
-        isDefault: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
+    address: {
+      type: String
+    }
+    ,
     cart: [
       {
         product: {

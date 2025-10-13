@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* Dark variant helper (optional) */
+@custom-variant dark (&:is(.dark *));
+
+/* Raw CSS variable definitions */
+:root {
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --primary: #dda15e;
+  --color-primary-100: #34210b;
+  --color-primary-200: #684216;
+  --color-primary-300: #9d6321;
+  --color-primary-400: #d1842c;
+  --color-primary-500: #dda15e;
+  --primary-600: #e4b57f;
+  --primary-700: #ebc79f;
+  --primary-800: #f1dabf;
+  --primary-900: #f8ecdf;
+
+  --background: #fefae0;
+  --foreground: #283618;
+  --primary: #dda15e;
+  --secondary: #bc6c25;
+  --accent: #606c38;
+
+
+  --border: #e5e7eb;
+  --input: #d1d5db;
+  --ring: #606c38;
+}
+
+.dark {
+  --bg: #1a1a1a;
+  --foreground: #fafafa;
+  --primary: #e4b57f;
+  --secondary: #bc6c25;
+  --accent: #fefae0;
+  --border: #333;
+  --ring: #bc6c25;
+}
+
+/* Map CSS vars to Tailwind theme tokens */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-200: var(--color-primary-200);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-400: var(--color-primary-400);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius: var(--radius);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+}
+
+body {
+  @apply bg-background text-foreground  ;
+}
