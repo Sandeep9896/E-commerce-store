@@ -8,8 +8,9 @@ import jwt from "jsonwebtoken";
 
 const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    secure: true, // Required for cross-site cookies with sameSite=none
+    sameSite: "none", // Required for cross-domain requests
+    path: "/", // Make sure the path is set
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
@@ -29,10 +30,10 @@ const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const refreshToken = generateToken(user._id, "30d");
-    const accessToken = generateToken(user._id, "1d");
+    const accessToken = generateToken(user._id, "5s");
     user.refreshToken = refreshToken;
     await user.save();
-
+  console.log(refreshToken);
     req[role] = user;
 
     res
@@ -48,12 +49,17 @@ const logOut = async (req, res) => {
 
 
 const refreshAccessToken = async (req, res) => {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
-        return res.status(401).json({ message: "No refresh token provided" });
+    console.log("Cookies received:", req.cookies);
+    console.log("Headers:", req.headers);
+    
+    const token = req.cookies.refreshToken;
+    
+    if (!token) {
+      return res.status(401).json({ message: "No refresh token" });
     }
+    
     try {
-        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         let user = await User.findById(decoded.id).select("+refreshToken");
         if (!user) {
             user = await Seller.findById(decoded.id).select("+refreshToken");
@@ -62,7 +68,7 @@ const refreshAccessToken = async (req, res) => {
             user = await Admin.findById(decoded.id).select("+refreshToken");
         }
 
-        if (user.refreshToken !== refreshToken) {
+        if (user.refreshToken !== token) {
             return res.status(401).json({ message: "Invalid refresh token" });
         }
 
@@ -70,9 +76,9 @@ const refreshAccessToken = async (req, res) => {
         res.status(200).json({ message: "New access token generated", accessToken: newAccessToken });
     } catch (error) {
         res.status(401).json({ message: " error Invalid refresh token" });
-        throw new Error("Invalid refresh token", { cause: error });
+        // throw new Error("Invalid refresh token", { cause: error });
 
-    }
+    }   
 };
 
 export default { login, refreshAccessToken, logOut };

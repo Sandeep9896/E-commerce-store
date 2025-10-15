@@ -8,7 +8,7 @@ const navItems = [
   { label: "Home", path: "/" },
   { label: "Products", path: "/products" },
   { label: "Cart", path: "/cart" },
-  { label: "Profile", path: "/profile" },
+  { label: "Profile", path: "/user/profile" },
 ];
 
 export default function UserLayout() {

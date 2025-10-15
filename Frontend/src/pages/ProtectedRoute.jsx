@@ -1,10 +1,11 @@
 // ProtectedRoute.jsx
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { setUser } from "../slices/authSlice";
 import UserLayout from "../layout/UserLayout";
+import SellerLayout from "../layout/SellerLayout";
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
@@ -33,8 +34,8 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   if (!isLoggedIn && storedUser) {
     return <p>Loading...</p>;
   }
-
-  return <UserLayout>{children}</UserLayout>;
+    return <Outlet />;
+  
 };
 
 export default ProtectedRoute;

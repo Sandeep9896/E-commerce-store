@@ -35,11 +35,14 @@ function App() {
             <Route path="/product/:id" element={<Product />} />
             <Route path="/products/:category" element={<Product />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/user/profile" element={<ProfilePage />} />
           </Route>
 
           <Route path="/seller" element={<SellerLayout />}>
-            <Route index element={<SellerDashboard />} />
+            <Route element={<ProtectedRoute allowedRole="seller" />}>
+              <Route index element={<SellerDashboard />} />
+            </Route>
+
             <Route path="products" element={<SellerProducts />} />
             {/* <Route path="orders" element={<SellerOrders />} /> */}
             <Route path="profile" element={<SellerProfile />} />

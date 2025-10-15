@@ -44,27 +44,60 @@ api.interceptors.request.use(
 
 // Handle token expiration automatically
 api.interceptors.response.use(
-  (response) => response, // success → just return
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // Log all API errors to help debug
+    console.log("API Error:", {
+      status: error.response?.status,
+      message: error.response?.data?.message,
+      url: originalRequest?.url
+    });
 
-    // If 403 Forbidden and not retried yet
-    if (error.response?.status === 403 && !originalRequest._retry) {
+    // Check only for 401/403 status, don't check message content
+    if ((error.response?.status === 401 || error.response?.status === 403) && 
+        !originalRequest._retry) {
+      
+      console.log("Auth error detected, attempting token refresh...");
       originalRequest._retry = true;
 
       try {
-        // Ask backend for a new token
-        const res = await axios.post("http://localhost:5000/api/refresh", {}, { withCredentials: true });
+        // Make sure the URL is correct - check your backend routes
+        const refreshUrl = `${import.meta.env.VITE_API_URL}/auth/refresh-token`;
+        console.log("Calling refresh endpoint:", refreshUrl);
+        
+        const res = await axios.post(refreshUrl, {}, { 
+          withCredentials: true,
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
 
-        const newToken = res.data.accessToken;
+        console.log("Refresh response:", res.data);
+
+        // Check for accessToken or token property
+        const newToken = res.data.accessToken || res.data.token;
+        
+        if (!newToken) {
+          throw new Error("No token returned from refresh endpoint");
+        }
+
         localStorage.setItem("accessToken", newToken);
 
         // Update header and retry original request
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        console.error("Refresh token failed:", refreshError);
-        window.location.href = "/login"; // if refresh fails → logout
+        console.error("Token refresh failed:", refreshError);
+        
+        // Dispatch logout event
+        window.dispatchEvent(new CustomEvent('authExpired'));
+        
+        // setTimeout(() => {
+        //   localStorage.removeItem("accessToken");
+        //   window.location.href = "/login/user";
+        // }, 100);
       }
     }
 

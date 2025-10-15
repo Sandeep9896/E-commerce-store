@@ -15,13 +15,26 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // your frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true, // if you send cookies or auth headers
-  })
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow the specific origin that made the request
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  // These are crucial for cookies
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 
+    'Origin,X-Requested-With,Content-Type,Accept,Authorization,ngrok-skip-browser-warning');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 // Middleware
 app.use(cookieParser());
 app.use(express.json());

@@ -36,7 +36,7 @@ function useLogin(role) {
         setIsLoggedInLocalStorage(true);
         // Save to localStorage based on role
         console.log("isLoggedIn:", isLoggedIn, role, data);
-        navigate("/profile"); // ensure your route is lowercase
+        navigate(`/${role}/profile`); // ensure your route is lowercase
       } catch (err) {
         console.error("Login failed:", err);
       }

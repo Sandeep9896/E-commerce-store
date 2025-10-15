@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import api from "../api/api";
 
-export default function SellerLayout() {
+export default function SellerLayout({children}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -133,7 +133,7 @@ export default function SellerLayout() {
 
         {/* Main content area */}
         <main className="flex-1 p-6 bg-background overflow-y-auto">
-          <Outlet />
+            {children || <Outlet />}
         </main>
 
         {/* Footer */}
