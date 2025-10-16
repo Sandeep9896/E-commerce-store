@@ -30,7 +30,7 @@ const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const refreshToken = generateToken(user._id, "30d");
-    const accessToken = generateToken(user._id, "5s");
+    const accessToken = generateToken(user._id, "15m");
     user.refreshToken = refreshToken;
     await user.save();
   console.log(refreshToken);
