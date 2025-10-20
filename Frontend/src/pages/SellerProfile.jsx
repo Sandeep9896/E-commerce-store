@@ -91,7 +91,7 @@ const SellerProfile = () => {
   const handleSave = async () => {
     try {
       // API call to update profile
-      const { data } = await api.put('/users/update-profile', form);
+      const { data } = await api.put('/seller/update-profile', form);
 
       if (data && data.user) {
         // Update Redux and localStorage with updated data
@@ -175,7 +175,7 @@ const SellerProfile = () => {
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={(e) => handleImageChange(e, "seller/upload-seller-avatar")}
               />
             </label>
           </div>

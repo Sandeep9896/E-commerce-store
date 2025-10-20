@@ -3,20 +3,15 @@ import mongoose from "mongoose";
 
 const sellerSchema = new mongoose.Schema(
     {
+        avatar: {
+            url: String,
+            public_id: String,
+        },
         name: { type: String, required: true },
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
         password: { type: String, required: true, minlength: 6, select: false },
         phone: { type: String, trim: true },
-        address: [
-            {
-                fullName: String,
-
-                street: String,
-                city: String,
-                state: String,
-                postalCode: String,
-            },
-        ],
+        address: { type: String},
         products: [
             {
                 type: mongoose.Schema.Types.ObjectId,

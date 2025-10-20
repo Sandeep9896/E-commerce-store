@@ -174,7 +174,7 @@ const ProfilePage = () => {
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={(e) => handleImageChange(e, "users/upload-avatar")}
               />
             </label>
           </div>

@@ -1,9 +1,12 @@
 import React from 'react'
-
-const SellerDasboard = () => {
+import SalesChart from '../components/charts/SalesCharts.jsx';
+const SellerDashboard = () => {
   return (
-    <div>SellerDasboard</div>
+    <>
+      <div>SellerDashboard</div>
+      <SalesChart />
+    </>
   )
 }
 
-export default SellerDasboard
+export default SellerDashboard

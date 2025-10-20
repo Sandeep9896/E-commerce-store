@@ -9,7 +9,8 @@ const useUploadAvatar = () => {
   const dispatch = useDispatch();
 
   // function that handles image upload
-  const uploadAvatar = async (e) => {
+  const uploadAvatar = async (e,url) => {
+    console.log("Uploading avatar...", url);
     const file = e.target.files[0];
     if (!file) return;
 
@@ -20,13 +21,14 @@ const useUploadAvatar = () => {
       // Update user in Redux with preview URL
       dispatch(setUser({ ...user, avatar: previewURL }));
       setStoredUser({ ...storedUser, avatar: previewURL });
+      console.log("Preview URL set:", file);
 
       // Create FormData for file upload
       const formData = new FormData();
       formData.append("avatar", file);
 
       // Important: Set the correct content type (or remove it to let browser set automatically)
-      const response = await api.post("/users/upload-avatar", formData, {
+      const response = await api.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
