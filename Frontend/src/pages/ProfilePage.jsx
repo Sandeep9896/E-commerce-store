@@ -15,7 +15,7 @@ const ProfilePage = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const [isLoggedInLocalStorage, setIsLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
+  const [isLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
 
   const { uploadAvatar: handleImageChange } = useUploadAvatar();
   const [storedUser, setStoredUser] = useLocalStorage("user", null);

@@ -2,13 +2,15 @@ import Product from "../models/productModel.js";
 import Seller from "../models/sellerModel.js";
 
 const uploadProduct = async (req, res) => {
-
-    const { title, description, category, price, seller, } = req.body;
-
-    if (!req.files) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
     try {
+        const formData = req.body;
+        const seller = req.seller._id;
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const { productName, description, category, price, stock, } = formData;
 
         const imageData = req.files.map((file) => {
             return {
@@ -18,33 +20,49 @@ const uploadProduct = async (req, res) => {
         });
 
         console.log("imageData:", imageData);
-        const product = await Product.create({ title, description, category, price, seller, images: imageData });
-        await product.save();
-        // res.send("Product upload endpoint");
+
+        const product = await Product.create({
+            productName,
+            description,
+            category,
+            price,
+            seller,
+            images: imageData,
+            stock
+        });
+
+        // No need for product.save() - Product.create() already saves
+
         await Seller.findByIdAndUpdate(seller, { $push: { products: product._id } });
 
-        res.status(200).json({ message: "Product uploaded", product });
-    }
-    catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-        throw new Error("Server error", { cause: error });
+        return res.status(200).json({ message: "Product uploaded successfully", product });
+
+    } catch (error) {
+        console.error("Product upload error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
 const productPagination = async (req, res) => {
-    const allProducts = await Product.find().populate('seller', 'name');
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    try {
+        const allProducts = await Product.find().populate('seller', 'name');
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    const products = allProducts.slice(start, end);
+        const start = (page - 1) * limit;
+        const end = start + limit;
+        const products = allProducts.slice(start, end);
 
-    res.json({
-        products,
-        total: allProducts.length,
-        totalPages: Math.ceil(allProducts.length / limit),
-        currentPage: page,
-    });
-}
+        return res.json({
+            products,
+            total: allProducts.length,
+            totalPages: Math.ceil(allProducts.length / limit),
+            currentPage: page,
+        });
+    } catch (error) {
+        console.error("Pagination error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
 export default { uploadProduct, productPagination };

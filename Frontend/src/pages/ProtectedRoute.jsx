@@ -7,7 +7,7 @@ import { setUser } from "../slices/authSlice";
 import UserLayout from "../layout/UserLayout";
 import SellerLayout from "../layout/SellerLayout";
 
-const ProtectedRoute = ({ children, allowedRole }) => {
+const ProtectedRoute = ({  allowedRole }) => {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
   const [storedUser] = useLocalStorage("user", null);
   console.log("Stored User:", storedUser, "isLoggedIn:", isLoggedIn);

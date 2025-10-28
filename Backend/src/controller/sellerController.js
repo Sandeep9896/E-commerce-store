@@ -2,6 +2,7 @@ import Seller from "../models/sellerModel.js";
 import generateToken  from "../utils/generateToken.js";
 import { encryptPassword } from "../utils/hashPassword.js";
 import deleteImageFromCloudinary from "../utils/deleteImageCloudinary.js";
+import Product from "../models/productModel.js";
 
 const options = {
     httpOnly: true,
@@ -110,4 +111,15 @@ const updateProfile = async (req, res) => {
     }
 };
 
-export default { register, getProfile, uploadAvatar, updateProfile };
+const getProductsBySeller = async (req, res) => {
+    try {
+        const sellerId = req.seller._id;
+        const products = await Product.find({ seller: sellerId });
+        res.status(200).json({ products });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export default { register, getProfile, uploadAvatar, updateProfile, getProductsBySeller };
