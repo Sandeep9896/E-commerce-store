@@ -20,6 +20,7 @@ router.post("/upload", sellerProtect,(req, res, next) => {
 }, productController.uploadProduct);
 
 router.get("/", productController.productPagination);
+router.get("/featured", productController.featuredProducts);
 // router.get("/:id", productController.getProductById);
 // router.put("/:id", upload.array("images", 5), productController.updateProduct);
 // router.delete("/:id", productController.deleteProduct);

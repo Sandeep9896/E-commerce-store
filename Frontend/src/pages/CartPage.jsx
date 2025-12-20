@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { Button } from "../components/ui/button"; // shadcn UI button (or your own)
 import { Trash2 } from "lucide-react";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { addToCart, removeFromCart } from "../slices/cartSlice";
 import { useEffect } from "react";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import handleRazorpayPayment from "../components/handleRazorpayPayment";
+import api from "../api/api";
 
 const CartPage = () => {
   const dispatch = useDispatch();
 
   const cartItemsFromRedux = useSelector((state) => state.cart.cartItems);
-   console.log("CartPage rendered", cartItemsFromRedux);
+  console.log("CartPage rendered", cartItemsFromRedux);
   const [cartItems, setCartItems] = useState(cartItemsFromRedux || []);
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ const CartPage = () => {
     setCartItems(cartItemsFromRedux);
   }, [cartItemsFromRedux]);
 
-  const handleQuantityChange = (item) => {
+  const handleQuantityChange = async (item) => {
     // setCartItems((prev) =>
     //   prev.map((item) =>
     //     item.id === id
@@ -28,24 +30,53 @@ const CartPage = () => {
     // );
     console.log("Dispatching addToCart for item:", item);
     dispatch(addToCart(item));
-    
+    try {
+      await
+        api.put('/users/updateCart', {
+          productId: item._id,
+          quantity: item.quantity + 1
+        });
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+
   };
 
-  const handleRemove = (id, deletedItem=false) => {
+  const handleRemove = async (item, deletedItem = false) => {
     // setCartItems((prev) => prev.filter((item) => item.id !== id));
-    dispatch(removeFromCart({id, deletedItem}));
+    console.log("Dispatching removeFromCart for item ID:", item._id);
+    dispatch(removeFromCart({ item, deletedItem }));
+
+    if (deletedItem|| item.quantity === 1) {
+      try {
+        await api.delete(`/users/cart/${item._id}`);
+      } catch (error) {
+        console.error("Error removing from cart:", error);
+      }
+      return;
+    }
+   
+    try {
+      api.put('/users/updateCart', {
+          productId: item._id,
+          quantity: item.quantity - 1
+        });
+
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+    }
   };
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
-    0
+    0 
   );
 
   if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
         <img
-          src="/images/empty-cart.svg"
+          src="/images/empty-cart.png"
           alt="Empty Cart"
           className="w-48 sm:w-64 mb-4"
         />
@@ -92,7 +123,7 @@ const CartPage = () => {
                 <Button
                   variant="outline"
                   className="px-2"
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(item)}
                 >
                   -
                 </Button>
@@ -112,7 +143,7 @@ const CartPage = () => {
                 </p>
                 <Trash2
                   size={18}
-                  onClick={() => handleRemove(item.id, true)}
+                  onClick={() => handleRemove(item, true)}
                   className="text-red-500 hover:text-red-700 cursor-pointer"
                 />
               </div>
@@ -139,13 +170,14 @@ const CartPage = () => {
             <span>₹{subtotal + 50}</span>
           </div>
 
-          <Button className="w-full mt-4 bg-primary text-foreground hover:bg-secondary">
+          <Button className="w-full mt-4 bg-primary text-foreground hover:bg-secondary"
+            onClick={() => handleRazorpayPayment(subtotal + 50)} >
             Proceed to Checkout
           </Button>
           <Button
             variant="outline"
             className="w-full mt-2 text-foreground hover:text-background"
-            onClick={()=> navigate("/")}
+            onClick={() => navigate("/")}
           >
             Continue Shopping
           </Button>

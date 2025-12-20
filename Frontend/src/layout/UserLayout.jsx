@@ -4,16 +4,24 @@ import { Button } from "../components/ui/button";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import api from "../api/api";
-const navItems = [
-  { label: "Home", path: "/" },
-  { label: "Products", path: "/products" },
-  { label: "Cart", path: "/cart" },
-  { label: "Profile", path: "/user/profile" },
-];
+
 
 export default function UserLayout() {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const user = useSelector((state) => state.auth.user?.role || "user");
+  let profilePath = "/user/profile";
+
+  if(user=="seller")
+  {
+    profilePath = "/seller/profile";
+  }
+  const navItems = [
+  { label: "Home", path: "/" },
+  { label: "Products", path: "/products" },
+  { label: "Cart", path: "/cart" },
+  { label: "Profile", path: profilePath },
+];
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,7 +101,7 @@ export default function UserLayout() {
           })}
 
         </nav>
-        <Button className={"hidden sm:flex   "} variant="outline" onClick={() => { isLoggedIn ? handleLogout() : handleNav("/login/user") }}>
+        <Button className={"hidden sm:flex  hover:bg-accent hover:text-background  "} variant="outline" onClick={() => { isLoggedIn ? handleLogout() : handleNav("/login/user") }}>
           {isLoggedIn ? "Logout" : "Login"}
         </Button>
 

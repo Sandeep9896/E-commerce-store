@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Search, X } from "lucide-react";
 
-const SearchBar = ({ onSearch ,className }) => {
+const SearchBar = ({ onSearch, className = "", onClear, onFocusChange }) => {
   const [query, setQuery] = useState("");
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -11,7 +12,18 @@ const SearchBar = ({ onSearch ,className }) => {
 
   const handleClear = () => {
     setQuery("");
+    if (onClear) onClear();
     if (onSearch) onSearch("");
+
+  };
+
+
+  const handleFocus = () => {
+    if (onFocusChange) onFocusChange(true);
+  };
+
+  const handleBlur = () => {
+    if (onFocusChange) setTimeout(() => onFocusChange(false), 100);
   };
 
   return (
@@ -27,7 +39,12 @@ const SearchBar = ({ onSearch ,className }) => {
         type="text"
         placeholder="Search for products, brands, or categories..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (onSearch) onSearch(e.target.value);
+        }}
         className="w-full pl-10 pr-10 py-2 rounded-full border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-sm transition-all"
       />
 

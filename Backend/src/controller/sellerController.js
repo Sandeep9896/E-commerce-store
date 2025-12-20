@@ -51,9 +51,7 @@ const uploadAvatar = async(req, res) => {
                 public_id: req.file.filename
             };
     
-            console.log("imageData:", imageData);
             const user = await Seller.findById(req.seller._id);
-            console.log("Current user:", user.avatar);
             deleteImageFromCloudinary(user?.avatar?.public_id);
             user.avatar = imageData;
             await user.save();
@@ -69,8 +67,6 @@ const uploadAvatar = async(req, res) => {
 const updateProfile = async (req, res) => {
     try {
         // Get the form data from req.body
-        console.log("Request body:", req.body); // Debug what's being received
-        
         // Extract fields from whatever structure is sent
         // If you're sending the entire form object
         const formData = req.body;
@@ -81,8 +77,6 @@ const updateProfile = async (req, res) => {
         if (formData.phone) updateData.phone = formData.phone;
         if (formData.address) updateData.address = formData.address;
         // Don't allow email updates through this endpoint (would need verification)
-        
-        console.log("Update data:", updateData); // Debug what's being updated
         
         // Find and update in one step
         const user = await Seller.findByIdAndUpdate(
@@ -121,5 +115,33 @@ const getProductsBySeller = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+const updateProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const updateData = req.body;
+        console.log("Update data for product:", productId, updateData);
 
-export default { register, getProfile, uploadAvatar, updateProfile, getProductsBySeller };
+        const product = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        console.log("Updated product:", product);
+        res.status(200).json({ message: "Product updated successfully", product });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+const FeatureRequestProduct = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  product.featuredRequest = true;
+  await product.save();
+
+  res.json({ message: 'Feature request submitted successfully' });
+};
+
+export default { register, getProfile, uploadAvatar, updateProfile, getProductsBySeller, updateProduct, FeatureRequestProduct };

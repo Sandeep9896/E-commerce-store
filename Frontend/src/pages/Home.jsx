@@ -1,28 +1,28 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Slider from "../components/Slider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../slices/cartSlice";
+import api from "../api/api";
+import SuggestionBox from "../components/SuggestionBox";
+import { set } from "lodash";
 
 
 export default function ProductCarousel() {
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
     const dispatch=useDispatch();
+    const [suggestions, setSuggestions] = useState([]);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const categories = [
-        { name: "Electronics Products", image: "/images/pb1.jpg" },
-        { name: "Fashion Products", image: "/images/pb2.jpg" },
-        { name: "Home Products", image: "/images/pb3.jpg" },
-        { name: "Sports Products", image: "/images/pb4.jpg" },
+        { name: "Electronics Products", image: "/images/pb1.jpg", category: "Electronics" },
+        { name: "Fashion Products", image: "/images/pb2.jpg", category: "Clothing" },
+        { name: "Home Products", image: "/images/pb3.jpg", category: "Furniture" },
+        { name: "Sports Products", image: "/images/pb4.jpg", category: "Sports" },
     ];
-    const Products = [
-        { name: "TV", image: "tv.jpg", price: 20000 },
-        { name: "Washing Machine", image: "washingMachine.png", price: 25000 },
-        { name: "Refrigerator", image: "rf.webp", price: 30000 },
-        { name: "Laptop", image: "laptop.avif", price: 40000 },
-        { name: "Mobile", image: "phone.jpg", price: 15000 },
-    ]
+    const [Products, setProducts] = useState([]);
+
     const SlideProduct = [
         { id: 1, name: "Smart Watch", image: "p1.jpg", price: 5000 },
         { id: 2, name: "Headphones", image: "p2.jpg", price: 3000 },
@@ -30,7 +30,7 @@ export default function ProductCarousel() {
     ]
     const [active, setActive] = useState(null);
 
-     const handleAddToCart = (e, product) => {
+     const handleAddToCart = async(e, product) => {
         e.preventDefault();
         e.stopPropagation();
         // Implement add to cart functionality here
@@ -41,10 +41,71 @@ export default function ProductCarousel() {
     
         dispatch(addToCart(product));
         console.log("Add to cart:", product);
-      };
+        try {
+            await
+        api.post('/users/addToCart', {
+            productId: product._id,
+            quantity: 1
+        });
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+        }
+    };
+    const handleSearch = async (searchTerm) => {
+        console.log("Searching for:", searchTerm);
+        try {
+            const response = await api.get(`/users/search/${searchTerm}`);
+            console.log("Search results:", response.data.products);
+            setSuggestions(response.data.products);
+            // navigate('/products', { state: { searchResults: response.data.products, searchTerm } });
+        } catch (error) {
+            console.error("Error searching products:", error);
+        }
+    };
+
+
+    const handleSelectSuggestion = (product) => {
+        // navigate(`/products/${product._id}`);
+        setSuggestions([]);
+        setIsSearchFocused(false);
+    }
+    useEffect(() => {
+        // Cleanup suggestions when search is cleared
+        if (!isSearchFocused) {
+            setSuggestions([]);
+        }
+    }, [isSearchFocused]);
+
+    const fetchFeaturedProducts = async () => {
+        try {
+            const response = await api.get('/products/featured');
+            console.log("Featured products:", response.data.featuredProducts);
+            // Handle featured products as needed
+            setProducts(response.data.featuredProducts);
+
+        } catch (error) {
+            console.error("Error fetching featured products:", error);
+        }
+    };
+    useEffect(() => {
+        fetchFeaturedProducts();
+    }, []);
+
+   
     return (
         <div className=" container  mx-auto mt-5  min-h-[90vh]   ">
-            <SearchBar className="mb-5" />
+            <div className="relative w-full sm:w-[400px] mx-auto mb-5">
+                <SearchBar
+                  onSearch={handleSearch}
+                  onClear={() => setSuggestions([])}
+                  onFocusChange={setIsSearchFocused}
+                />
+
+                {isSearchFocused && (
+                    <SuggestionBox suggestions={suggestions} onSelect={handleSelectSuggestion} />
+                )}
+            </div>
+
             {/* Slider Section */}
             <Slider products={SlideProduct} />
 
@@ -79,7 +140,7 @@ export default function ProductCarousel() {
 
                         {/* Footer */}
                         <div className="mt-3 flex justify-center">
-                            <button className="text-primary bg-background hover:text-secondary  w-full py-2 rounded-md font-medium sm:text-xl transition">
+                            <button className="text-primary bg-background hover:text-secondary  w-full py-2 rounded-md font-medium sm:text-xl transition" onClick={() => { navigate('/products', { state: { category: category.category } }); window.scrollTo({ top: 0, behavior: "instant" }); }}>
                                 Browse Now
                             </button>
                         </div>
@@ -87,7 +148,7 @@ export default function ProductCarousel() {
                 ))}
             </div>
 
-            <h2 className="text-2xl text-secondary  font-bold mt-5 text-center">  Products</h2>
+            <h2 className="text-2xl text-secondary  font-bold mt-5 text-center"> Featured Products</h2>
 
             <div>
 
@@ -95,20 +156,19 @@ export default function ProductCarousel() {
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-2 p-4 mt-5">
                     {Products.map((product) => (
                         <div
-                            key={product.name}
+                            key={product._id}
                             className="relative bg-accent rounded-lg border border-secondary shadow hover:shadow-lg transition-shadow flex flex-col group overflow-hidden"
-                            onClick={() => setActive(active === product.name ? null : product.name)}
+                            onClick={() => setActive(active === product.productName ? null : product.productName)}
                         >
                             <div className="relative">
                                 <img
-                                    src={`/images/${product.image}`}
-                                    alt={`Product ${product.name}`}
+                                    src={product.images[0].url}
+                                    alt={`Product ${product.productName}`}
                                     className="w-full h-[120px] sm:h-[180px] object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
                                 />
 
                                 <div
-                                    className={`absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300 rounded-md ${active === product.name ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
-                                        }`}
+                                    className={`absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300 rounded-md ${active === product.productName ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"}`}
                                 >
                                     <button onClick={(e) => handleAddToCart(e, product)} className="bg-primary text-foreground hover:bg-secondary px-3 py-2 rounded-md text-sm sm:text-base font-medium transition">
                                         Add to Cart
@@ -118,7 +178,7 @@ export default function ProductCarousel() {
 
                             <div className="flex flex-col gap-1 px-3 pb-2 pt-2">
                                 <h3 className="text-base text-background sm:text-lg font-semibold truncate">
-                                    {product.name}
+                                    {product.productName}
                                 </h3>
                                 <p className="text-sm sm:text-base font-medium text-background">
                                     Price: ${product.price}
@@ -129,7 +189,7 @@ export default function ProductCarousel() {
                 </div>
 
 
-                <button onClick={() => { Navigate('/products'); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="mt-4 block outline py-2 w-32 mx-auto text-secondary font-bold hover:bg-primary hover:text-background rounded-md">
+                <button onClick={() => { navigate('/products'); window.scrollTo({ top: 0, behavior: "instant" }); }} className="mt-4 block outline py-2 w-32 mx-auto text-secondary font-bold hover:bg-primary hover:text-background rounded-md">
                     Load More
                 </button>
 

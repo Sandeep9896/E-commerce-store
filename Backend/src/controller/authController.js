@@ -33,7 +33,6 @@ const login = async (req, res) => {
     const accessToken = generateToken(user._id, "15m");
     user.refreshToken = refreshToken;
     await user.save();
-  console.log(refreshToken);
     req[role] = user;
 
     res
@@ -49,9 +48,6 @@ const logOut = async (req, res) => {
 
 
 const refreshAccessToken = async (req, res) => {
-    console.log("Cookies received:", req.cookies);
-    console.log("Headers:", req.headers);
-    
     const token = req.cookies.refreshToken;
     
     if (!token) {

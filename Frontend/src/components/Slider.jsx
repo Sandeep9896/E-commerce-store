@@ -10,7 +10,7 @@ import {
 const Slider = ({ products }) => {
     return (
         <>
-            <Carousel className="rounded-xl md:max-w-[80%] mx-auto overflow-hidden">
+            <Carousel autoPlay interval={3000} pauseOnHover className="rounded-xl md:max-w-[80%] mx-auto overflow-hidden">
 
                 <CarouselContent>
                     {products && products.map((product) => (

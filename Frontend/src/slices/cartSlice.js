@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { set } from "lodash";
 const initialState = {
     cartItems: [],
     totalQuantity: 0,
@@ -20,11 +21,10 @@ const cartSlice = createSlice({
             if (!existingItem) {
                 state.cartItems.push({
                     _id: newItem._id,
-                    name: newItem.title,
+                    productName: newItem.productName,
                     image: newItem.images[0].url,
                     price: newItem.price,
                     quantity: 1,
-                    totalPrice: newItem.price,
                 });
             } else {
                 existingItem.quantity++;
@@ -38,14 +38,14 @@ const cartSlice = createSlice({
             );
         },
         removeFromCart: (state, action) => {
-            const {id, deletedItem} = action.payload;
-            const existingItem = state.cartItems.find((item) => item.id === id);
+            const {item, deletedItem} = action.payload;
+            const existingItem = state.cartItems.find((cartItem) => cartItem._id === item._id);
 
             if (existingItem) {
                 state.totalQuantity--;
 
                 if (existingItem.quantity === 1|| deletedItem) {
-                    state.cartItems = state.cartItems.filter((item) => item.id !== id);
+                    state.cartItems = state.cartItems.filter((cartItem) => cartItem._id !== item._id);
                 } else {
                     existingItem.quantity--;
                     existingItem.totalPrice =
@@ -63,9 +63,12 @@ const cartSlice = createSlice({
             state.totalQuantity = 0;
             state.totalAmount = 0;
         },
+        setCartItems: (state, action) => {
+            state.cartItems = action.payload;
+        }
     },
 });
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart, setCartItems } = cartSlice.actions;
 
 export default cartSlice.reducer;

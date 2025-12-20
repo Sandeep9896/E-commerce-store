@@ -66,12 +66,12 @@ export default function SellerLayout({children}) {
   };
 
   return (
-    <div className="min-h-screen flex bg-muted/20">
+    <div className="min-h-screen bg-muted/20">
       {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } sm:translate-x-0 fixed sm:static inset-y-0 left-0 w-64 bg-primary text-foreground transition-transform duration-300 flex flex-col`}
+        } sm:translate-x-0 fixed inset-y-0 left-0 w-64 bg-primary text-foreground transition-transform duration-300 flex flex-col z-30`}
       >
         <div className="flex items-center justify-between p-4 border-b border-primary-foreground/30">
           <h2 className="text-xl font-bold tracking-tight">Seller Panel</h2>
@@ -110,8 +110,8 @@ export default function SellerLayout({children}) {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content (shifted right on desktop) */}
+      <div className="flex-1 flex flex-col sm:ml-64">
         {/* Header */}
         <header className="flex items-center justify-between bg-background border-b p-4 shadow-sm sticky top-0 z-20">
           <div className="flex items-center gap-3">
@@ -121,19 +121,18 @@ export default function SellerLayout({children}) {
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-xl font-semibold">Welcome, {seller?.name || "Seller"}</h1>
+            <h1 className="text-xl font-semibold">
+              Welcome, {seller?.name || "Seller"}
+            </h1>
           </div>
-          <Link
-            to="/"
-            className="text-sm text-primary hover:underline"
-          >
+          <Link to="/" className="text-sm text-primary hover:underline">
             Go to Storefront →
           </Link>
         </header>
 
         {/* Main content area */}
         <main className="flex-1 p-6 bg-background overflow-y-auto">
-            {children || <Outlet />}
+          {children || <Outlet />}
         </main>
 
         {/* Footer */}

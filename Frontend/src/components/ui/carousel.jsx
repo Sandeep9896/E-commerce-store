@@ -25,6 +25,9 @@ const Carousel = React.forwardRef((
     plugins,
     className,
     children,
+    autoPlay = true,           // new: enable/disable autoplay
+    interval = 3500,           // new: ms between slides
+    pauseOnHover = true,       // new: pause when hovering
     ...props
   },
   ref
@@ -32,6 +35,8 @@ const Carousel = React.forwardRef((
   const [carouselRef, api] = useEmblaCarousel({
     ...opts,
     axis: orientation === "horizontal" ? "x" : "y",
+    loop: true, // smooth infinite loop
+    duration: 20, // embla animation speed (lower is faster, adjust as needed)
   }, plugins)
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
@@ -85,6 +90,62 @@ const Carousel = React.forwardRef((
     };
   }, [api, onSelect])
 
+  // Auto-play management
+  const timerRef = React.useRef(null)
+  const isPausedRef = React.useRef(false)
+
+  const startAutoPlay = React.useCallback(() => {
+    if (!autoPlay || !api) return
+    clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      if (!isPausedRef.current) {
+        api.scrollNext()
+      }
+    }, interval)
+  }, [api, autoPlay, interval])
+
+  const stopAutoPlay = React.useCallback(() => {
+    clearInterval(timerRef.current)
+    timerRef.current = null
+  }, [])
+
+  // Restart autoplay when API ready or on reInit/select
+  React.useEffect(() => {
+    if (!api) return
+    startAutoPlay()
+    api.on("reInit", startAutoPlay)
+    api.on("select", startAutoPlay)
+    return () => {
+      api?.off("reInit", startAutoPlay)
+      api?.off("select", startAutoPlay)
+      stopAutoPlay()
+    }
+  }, [api, startAutoPlay, stopAutoPlay])
+
+  // Pause on user interaction
+  const onPointerDown = React.useCallback(() => {
+    isPausedRef.current = true
+    stopAutoPlay()
+  }, [stopAutoPlay])
+
+  const onPointerUp = React.useCallback(() => {
+    isPausedRef.current = false
+    startAutoPlay()
+  }, [startAutoPlay])
+
+  // Optional: pause on hover
+  const onMouseEnter = React.useCallback(() => {
+    if (!pauseOnHover) return
+    isPausedRef.current = true
+    stopAutoPlay()
+  }, [pauseOnHover, stopAutoPlay])
+
+  const onMouseLeave = React.useCallback(() => {
+    if (!pauseOnHover) return
+    isPausedRef.current = false
+    startAutoPlay()
+  }, [pauseOnHover, startAutoPlay])
+
   return (
     <CarouselContext.Provider
       value={{
@@ -101,6 +162,10 @@ const Carousel = React.forwardRef((
       <div
         ref={ref}
         onKeyDownCapture={handleKeyDown}
+        onPointerDownCapture={onPointerDown}
+        onPointerUpCapture={onPointerUp}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         className={cn("relative", className)}
         role="region"
         aria-roledescription="carousel"

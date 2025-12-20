@@ -39,4 +39,13 @@ const getProfile = (req, res) => {
     res.status(200).json({ user: req.admin });
 };
 
-export default { register, getProfile };
+const approveFeatureRequest = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  product.isFeatured = true;
+  product.featuredRequest = false;
+  await product.save();
+
+  res.json({ message: 'Product marked as featured' });
+}
+
+export default { register, getProfile ,approveFeatureRequest};

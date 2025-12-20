@@ -1,13 +1,13 @@
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 const initialState = {
     products: [],
-    sellerProduct: []
+    sellerProducts: []
 };
 
 const productSlice = createSlice({
-    name: 'products',
+    name: 'product',
     initialState,
     reducers: {
         addProduct: (state, action) => {
@@ -20,11 +20,17 @@ const productSlice = createSlice({
             state.products = [];
         },
         setSellerProducts: (state, action) => {
-            console.log("Setting seller products:", action.payload);
-            state.sellerProduct.push(action.payload);
+            state.sellerProducts = Array.isArray(action.payload) ? action.payload : [action.payload];
         },
     },
 });
 
 export const { addProduct, removeProduct, clearProducts, setSellerProducts } = productSlice.actions;
+
+// Memoized selector to prevent unnecessary rerenders
+export const selectSellerProducts = createSelector(
+    (state) => state.product.sellerProducts,
+    (sellerProducts) => sellerProducts || []
+);
+
 export default productSlice.reducer;

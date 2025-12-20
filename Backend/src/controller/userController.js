@@ -2,6 +2,13 @@ import User from "../models/userModel.js";
 import deleteImageFromCloudinary from "../utils/deleteImageCloudinary.js";
 import generateToken  from "../utils/generateToken.js";
 import { encryptPassword } from "../utils/hashPassword.js";
+import Razorpay from "razorpay";
+import Product from "../models/productModel.js";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const options = {
     httpOnly: true,
@@ -43,8 +50,6 @@ const getProfile = (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         // Get the form data from req.body
-        console.log("Request body:", req.body); // Debug what's being received
-        
         // Extract fields from whatever structure is sent
         // If you're sending the entire form object
         const formData = req.body;
@@ -55,8 +60,6 @@ const updateProfile = async (req, res) => {
         if (formData.phone) updateData.phone = formData.phone;
         if (formData.address) updateData.address = formData.address;
         // Don't allow email updates through this endpoint (would need verification)
-        
-        console.log("Update data:", updateData); // Debug what's being updated
         
         // Find and update in one step
         const user = await User.findByIdAndUpdate(
@@ -96,9 +99,7 @@ const uploadAvatar = async(req, res) => {
                 public_id: req.file.filename
             };
     
-            console.log("imageData:", imageData);
             const user = await User.findById(req.user._id);
-            console.log("Current user:", user.avatar);
             deleteImageFromCloudinary(user.avatar?.public_id);
             user.avatar = imageData;
             await user.save();
@@ -110,7 +111,123 @@ const uploadAvatar = async(req, res) => {
             throw new Error("Server error", { cause: error });
         }
 };
+const createOrder = async (req, res) => {
+  const options = {
+    amount: req.body.amount * 100, // amount in paise
+    currency: "INR",
+    receipt: "order_rcpt_11"
+  };
 
-      
+  try {
+    const order = await razorpay.orders.create(options);
+    res.send(order);
+  } catch (err) {
+    res.status(500).send({ error: err });
+  }
+};
 
-export default { register, getProfile, updateProfile, uploadAvatar };
+const addToCart = async (req, res) => {
+    try {
+        const { productId, quantity } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        console.log("Current cart:", user.cart, "Adding product:", productId, "Quantity:", quantity);
+        const existingCartItemIndex = user.cart.findIndex(item => item?.product?.toString() === productId);
+        if (existingCartItemIndex >= 0) {
+            user.cart[existingCartItemIndex].quantity += quantity;
+            console.log("Updated quantity for existing cart item");
+        } else {
+            user.cart.push({ product: productId, quantity });
+            console.log("Added new item to cart");
+        }
+        await user.save();
+        res.status(200).json({ message: "Product added to cart", cart: user.cart });
+    } catch (error) {
+        console.error("Add to cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+const getCart = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate('cart.product');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ cart: user.cart });
+    } catch (error) {
+        console.error("Get cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+const removeFromCart = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.cart = user.cart.filter(item => item.product.toString() !== productId);
+        await user.save();
+        res.status(200).json({ message: "Product removed from cart", cart: user.cart });
+    } catch (error) {
+        console.error("Remove from cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+const clearCart = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.cart = [];
+        await user.save();
+        res.status(200).json({ message: "Cart cleared", cart: user.cart });
+    } catch (error) {
+        console.error("Clear cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+const updateCart = async (req, res) => {
+    try {
+        const { productId, quantity } = req.body;
+        console.log("Update cart request for product:", productId, "to quantity:", quantity);
+        const user = await User.findById(req.user._id); 
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const cartItem = user.cart.find(item => item.product.toString() === productId);
+        if (!cartItem) {
+            return res.status(404).json({ message: "Product not found in cart" });
+        }
+        cartItem.quantity = quantity;
+        await user.save();
+        res.status(200).json({ message: "Cart updated", cart: user.cart });
+    } catch (error) {
+        console.error("Update cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+const searchProducts = async (req, res) => {
+    try {
+        const {  query } = req.params;
+        console.log("Searching products with query:", query, req.params, req.query);
+        if (!query) {
+            return res.status(400).json({ message: "Query parameter 'query' is required" });
+        }
+        const products = await Product.find({ productName: { $regex: `^${query}`, $options: "i" } });
+        res.status(200).json({ products });
+    } catch (error) {
+        console.error("Search products error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+
+export default { register, getProfile, updateProfile, uploadAvatar, createOrder, addToCart, getCart, removeFromCart, clearCart, updateCart, searchProducts };

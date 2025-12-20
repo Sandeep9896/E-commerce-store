@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import api from '../api/api';
 import { useSelector,useDispatch } from 'react-redux';
 import { setSellerProducts } from '../slices/productSlice';
+import FeaturedButton from '../components/ui/FeaturedButton';
 
 const SellerProducts = () => {
   const dispatch = useDispatch();
@@ -41,10 +42,13 @@ const SellerProducts = () => {
     setEditForm(product);
   };
 
-  const handleSave = async (id) => {
+  const handleSave = useCallback(async (id) => {
     try {
       // Optional: Make API call to update product on backend
       // await api.put(`/products/${id}`, editForm);
+      console.log("Saving product with ID:", id, "Data:", editForm);
+      const res = await api.put(`/seller/products/${id}`, editForm);
+      console.log("Product updated:", res.data.product);
       
       setProducts(products.map(p => 
         p._id === id ? { ...editForm } : p
@@ -57,7 +61,7 @@ const SellerProducts = () => {
     } catch (error) {
       console.error("Error saving product:", error);
     }
-  };
+  }, [editForm]);
 
   const handleCancel = () => {
     setEditingProductId(null);
@@ -72,12 +76,12 @@ const SellerProducts = () => {
     <>
       <button 
         onClick={() => setShowUploadModal(true)} 
-        className="mt-4 mb-6 absolute right-0 bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600"
+        className="mt-4 mb-6 w-28 h-10 text-ellipsis text-[12px] sm:w-48 sm:h-10  absolute right-0 bg-green-500 text-white  py-2 rounded-full hover:bg-green-600"
       >
         Add New Product
       </button>
       <h1 className='text-2xl font-bold'>Products</h1>
-      <p className='text-lg'>List of products sold by the seller will be displayed here.</p>
+      <p className='text-lg'>List of products.</p>
       
       {showUploadModal && (
         <UploadProductModal 
@@ -100,11 +104,18 @@ const SellerProducts = () => {
                   {!isEditing && (
                     <button 
                       onClick={() => handleEdit(product)} 
-                      className="bg-blue-500 absolute right-5 top-4 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+                      className="bg-primary text-foreground absolute right-0 top-0 px-4 py-2 rounded-full hover:bg-blue-600"
                     >
                       Edit
                     </button>
                   )}
+                  <img 
+                    src={currentProduct.images?.[0]?.url || '/placeholder-image.jpg'} 
+                    alt={currentProduct.name} 
+                    className="w-100 h-100  rounded mb-4 object-cover" 
+                  />
+
+                  
 
                   {isEditing ? (
                     <>
@@ -112,13 +123,13 @@ const SellerProducts = () => {
                       <Input
                         id={`productName-${product._id}`}
                         placeholder="Product Name"
-                        value={currentProduct.name || ''}
-                        onChange={(e) => handleChange('name', e.target.value)}
+                        value={currentProduct.productName || ''}
+                        onChange={(e) => handleChange('productName', e.target.value)}
                         className="mb-3"
                       />
                     </>
                   ) : (
-                    <h2 className="text-lg font-semibold mb-2">{currentProduct.name}</h2>
+                    <h2 className="text-lg font-semibold mb-2">{currentProduct.productName}</h2>
                   )}
 
                   {isEditing ? (
@@ -169,11 +180,7 @@ const SellerProducts = () => {
                   )}
 
                   <p className="text-gray-600 mb-4">Sold: {currentProduct.sold || 0}</p>
-                  <img 
-                    src={currentProduct.images?.[0]?.url || '/placeholder-image.jpg'} 
-                    alt={currentProduct.name} 
-                    className="w-full h-48 object-cover rounded" 
-                  />
+                  
                   
                   {isEditing && (
                     <div className="absolute right-5 bottom-4 flex gap-2">
@@ -191,6 +198,8 @@ const SellerProducts = () => {
                       </button>
                     </div>
                   )}
+                  <FeaturedButton productId={product._id} isFeatured={product?.featured} featuredRequest={product?.featuredRequest} />
+
                 </div>
               );
             })

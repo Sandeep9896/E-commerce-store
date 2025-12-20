@@ -47,12 +47,4 @@ const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
 ))
 CardFooter.displayName = "CardFooter"
 
-const CardAction = React.forwardRef(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm text-primary font-medium hover:underline cursor-pointer", className)}
-    {...props} />
-))
-CardAction.displayName = "CardAction"
-
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent ,CardAction }
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

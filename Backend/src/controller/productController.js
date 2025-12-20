@@ -10,7 +10,7 @@ const uploadProduct = async (req, res) => {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
-        const { productName, description, category, price, stock, } = formData;
+        const { productName, description, category, price, stock, featured } = formData;
 
         const imageData = req.files.map((file) => {
             return {
@@ -19,8 +19,6 @@ const uploadProduct = async (req, res) => {
             };
         });
 
-        console.log("imageData:", imageData);
-
         const product = await Product.create({
             productName,
             description,
@@ -28,7 +26,8 @@ const uploadProduct = async (req, res) => {
             price,
             seller,
             images: imageData,
-            stock
+            stock,
+            featured: featured === 'true' // Convert string to boolean
         });
 
         // No need for product.save() - Product.create() already saves
@@ -65,4 +64,15 @@ const productPagination = async (req, res) => {
     }
 };
 
-export default { uploadProduct, productPagination };
+const featuredProducts = async (req, res) => {
+    try {
+        const featuredProducts = await Product.find({ featured: true }).populate('seller', 'name');
+        return res.status(200).json({ featuredProducts });
+    } catch (error) {
+        console.error("Fetching featured products error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+export default { uploadProduct, productPagination, featuredProducts };

@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema(
         price: { type: Number, required: true },
         category: {
             type: String,
-            enum: ["Electronics", "Clothing", "Books", "Home", "Beauty", "Sports", "Toys", "Grocery", "Automotive", "Health", "Furniture"],
+            enum: ["Electronics", "Clothing", "Books", "Home", "Beauty", "Sports", "Toys", "Grocery", "Automotive", "Health", "furniture"],
             required: true
         },
         stock: { type: Number, required: true, default: 0 },
@@ -33,13 +33,17 @@ const productSchema = new mongoose.Schema(
                 comment: { type: String, required: true },
             },
         ],
+        featured: { type: Boolean, default: false },
+        featuredRequest: { type: Boolean, default: false },
     },
     {
         timestamps: true,
     }
 );
 
+productSchema.index({ productName: "text", description: "text", category: "text" });
 
+productSchema.index({ productName: 1, category: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 
