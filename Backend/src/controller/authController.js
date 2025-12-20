@@ -76,5 +76,9 @@ const refreshAccessToken = async (req, res) => {
 
     }   
 };
+const healthCheck = (req, res) => {
+    res.status(200).json({ status: "OK" });
+    console.log("Health check OK");
+};
 
-export default { login, refreshAccessToken, logOut };
+export default { login, refreshAccessToken, logOut, healthCheck };

@@ -20,6 +20,9 @@ import { useEffect } from 'react'
 
 function App() {
   const dispatch = useDispatch();
+  useEffect(() => {
+     api.post('/auth/health' );
+  }, []);
 
   useEffect(() => {
     // Example API call to fetch initial data
