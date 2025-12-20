@@ -1,5 +1,9 @@
-import express from 'express';
 import dotenv from 'dotenv';
+
+// Load environment variables FIRST
+dotenv.config();
+
+import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -9,10 +13,6 @@ import authRoutes from './routes/authRoute.js';
 import sellerRoutes from './routes/sellerRoute.js';
 import adminRoutes from './routes/adminRoute.js';
 import productRoutes from './routes/productRoute.js';
-
-// Load environment variables first
-
-dotenv.config();
 
 const app = express();
 
