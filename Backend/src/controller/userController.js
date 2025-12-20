@@ -4,6 +4,7 @@ import generateToken  from "../utils/generateToken.js";
 import { encryptPassword } from "../utils/hashPassword.js";
 import Razorpay from "razorpay";
 import Product from "../models/productModel.js";
+import redisClient from "../config/redis.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -42,9 +43,24 @@ const register = async (req, res) => {
         .json({ message: "User registered", user: newUser, accessToken });
 };
 
-const getProfile = (req, res) => {
-    // res.send("User profile endpoint");
-    res.status(200).json({ user: req.user });
+const getProfile = async (req, res) => {
+    try {
+        const cacheKey = `user_profile_${req.user._id}`;
+        
+        // Check cache first
+        const cachedProfile = await redisClient.get(cacheKey);
+        if (cachedProfile) {
+            console.log('Returning cached user profile');
+            return res.status(200).json({ user: JSON.parse(cachedProfile) });
+        }
+
+        // Cache for 30 minutes (1800 seconds)
+        await redisClient.setEx(cacheKey, 1800, JSON.stringify(req.user));
+        res.status(200).json({ user: req.user });
+    } catch (error) {
+        console.error("Get profile error:", error);
+        res.status(200).json({ user: req.user });
+    }
 };
 
 const updateProfile = async (req, res) => {
@@ -71,6 +87,10 @@ const updateProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+
+        // Invalidate cache
+        const cacheKey = `user_profile_${req.user._id}`;
+        await redisClient.del(cacheKey);
 
         // Send response after successful update
         return res.status(200).json({ 

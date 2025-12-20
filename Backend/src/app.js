@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import redisClient from './config/redis.js';
 import userRoutes from './routes/userRoute.js';
 import authRoutes from './routes/authRoute.js';
 import sellerRoutes from './routes/sellerRoute.js';
