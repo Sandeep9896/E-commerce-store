@@ -2,9 +2,27 @@ import React, { useState } from "react";
 import { Button } from "../components/ui/button"; // adjust import path if needed
 import { Card } from "../components/ui/card";
 import { Star } from "lucide-react"; // for rating icons
+import { useLocation, useParams } from "react-router-dom";
+import api from "../api/api";
+import { useEffect } from "react";
+import useAddToCart from "../hooks/useAddToCart";
+const Product = () => {
+  const location = useLocation();
+  const handleAddToCart = useAddToCart();
+  const { id } = useParams();
 
-const Product = ({ product, relatedProducts }) => {
-  const [activeImage, setActiveImage] = useState(product.images[0]);
+  const [product, setProduct] = useState(location.state?.product);
+
+  useEffect(() => {
+    if (!product) {
+      api.get(`/products/${id}`).then(res => setProduct(res.data));
+    }
+  }, [id, product]);
+
+  const [activeImage, setActiveImage] = useState(product.images[0].url);
+
+
+
 
   return (
     <div className="bg-background text-foreground min-h-screen px-6 py-10">
@@ -15,7 +33,7 @@ const Product = ({ product, relatedProducts }) => {
           <div className="w-full h-[400px] bg-accent/10 rounded-lg flex items-center justify-center">
             <img
               src={activeImage}
-              alt={product.name}
+              alt={product.ProductName}
               className="object-contain w-full h-full rounded-lg"
             />
           </div>
@@ -24,12 +42,11 @@ const Product = ({ product, relatedProducts }) => {
             {product.images.map((img, i) => (
               <img
                 key={i}
-                src={img}
+                src={img.url}
                 alt={`Thumbnail ${i + 1}`}
-                onClick={() => setActiveImage(img)}
-                className={`w-20 h-20 object-cover rounded-md cursor-pointer border-2 ${
-                  activeImage === img ? "border-primary" : "border-transparent"
-                }`}
+                onClick={() => setActiveImage(img.url)}
+                className={`w-20 h-20 object-cover rounded-md cursor-pointer border-2 ${activeImage === img ? "border-primary" : "border-transparent"
+                  }`}
               />
             ))}
           </div>
@@ -37,7 +54,7 @@ const Product = ({ product, relatedProducts }) => {
 
         {/* Right: Product Info */}
         <div className="flex flex-col justify-center gap-5">
-          <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{product.productName}</h1>
           <p className="text-lg text-muted-foreground">{product.description}</p>
 
           {/* Rating */}
@@ -45,9 +62,8 @@ const Product = ({ product, relatedProducts }) => {
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-5 h-5 ${
-                  i < product.rating ? "fill-primary text-primary" : "text-muted"
-                }`}
+                className={`w-5 h-5 ${i < product.rating ? "fill-primary text-primary" : "text-muted"
+                  }`}
               />
             ))}
             <span className="ml-2 text-sm text-muted-foreground">
@@ -62,7 +78,7 @@ const Product = ({ product, relatedProducts }) => {
 
           {/* Buttons */}
           <div className="flex gap-4 mt-4">
-            <Button className="bg-primary text-foreground hover:bg-secondary flex-1">
+            <Button className="bg-primary text-foreground hover:bg-secondary flex-1" onClick={(e) => handleAddToCart(e, product)}>
               Add to Cart
             </Button>
             <Button className="bg-accent text-background hover:bg-primary flex-1">
@@ -73,7 +89,7 @@ const Product = ({ product, relatedProducts }) => {
       </div>
 
       {/* Related Products */}
-      <div className="mt-16 max-w-6xl mx-auto">
+      {/* <div className="mt-16 max-w-6xl mx-auto">
         <h2 className="text-2xl font-semibold mb-6 text-center">
           Related Products
         </h2>
@@ -105,7 +121,7 @@ const Product = ({ product, relatedProducts }) => {
             </Card>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

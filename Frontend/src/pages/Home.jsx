@@ -8,9 +8,11 @@ import { addToCart } from "../slices/cartSlice";
 import api from "../api/api";
 import SuggestionBox from "../components/SuggestionBox";
 import { set } from "lodash";
+import useAddToCart from "../hooks/useAddToCart";
 
 
 export default function ProductCarousel() {
+    const handleAddToCart = useAddToCart();
     const navigate = useNavigate();
     const dispatch=useDispatch();
     const [suggestions, setSuggestions] = useState([]);
@@ -30,27 +32,27 @@ export default function ProductCarousel() {
     ]
     const [active, setActive] = useState(null);
 
-     const handleAddToCart = async(e, product) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // Implement add to cart functionality here
-        e.target.textContent = "Added!";
-        setTimeout(() => {
-          e.target.textContent = "Add to Cart";
-        }, 500);
+    //  const handleAddToCart = async(e, product) => {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     // Implement add to cart functionality here
+    //     e.target.textContent = "Added!";
+    //     setTimeout(() => {
+    //       e.target.textContent = "Add to Cart";
+    //     }, 500);
     
-        dispatch(addToCart(product));
-        console.log("Add to cart:", product);
-        try {
-            await
-        api.post('/users/addToCart', {
-            productId: product._id,
-            quantity: 1
-        });
-        } catch (error) {
-            console.error("Error adding to cart:", error);
-        }
-    };
+    //     dispatch(addToCart(product));
+    //     console.log("Add to cart:", product);
+    //     try {
+    //         await
+    //     api.post('/users/addToCart', {
+    //         productId: product._id,
+    //         quantity: 1
+    //     });
+    //     } catch (error) {
+    //         console.error("Error adding to cart:", error);
+    //     }
+    // };
     const handleSearch = async (searchTerm) => {
         console.log("Searching for:", searchTerm);
         try {
@@ -65,7 +67,8 @@ export default function ProductCarousel() {
 
 
     const handleSelectSuggestion = (product) => {
-        // navigate(`/products/${product._id}`);
+        console.log("Selected suggestion:", product);
+        navigate(`/products/${product._id}`, { state: { product } });
         setSuggestions([]);
         setIsSearchFocused(false);
     }

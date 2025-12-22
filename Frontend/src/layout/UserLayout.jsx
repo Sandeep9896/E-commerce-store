@@ -4,6 +4,7 @@ import { Button } from "../components/ui/button";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import api from "../api/api";
+import { clearCart } from "../slices/cartSlice";
 
 
 export default function UserLayout() {
@@ -53,7 +54,9 @@ export default function UserLayout() {
       localStorage.removeItem("isLoggedIn");
 
       // ✅ Update Redux auth state
+      setTimeout(() => {
       dispatch(logout());
+      dispatch(clearCart());}, 100);
 
       // ✅ Redirect to login page
       navigate("/login/user", { replace: true });

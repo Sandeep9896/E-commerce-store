@@ -5,15 +5,15 @@ const SuggestionBox = ({ suggestions, onSelect }) => {
       {suggestions.length === 0 ? (
         <div className="p-2 text-gray-500">No suggestions found</div>
       ) : (
-        suggestions.map((suggestion, index) => (
+        suggestions.map((suggestionProduct, index) => (
           <div
             key={index}
             className="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-            onClick={() => onSelect(suggestion.productName)}
+            onClick={() => onSelect(suggestionProduct)}
             
           >
-            <img width="30" src={suggestion.images[0].url} alt={suggestion.productName} />
-            {suggestion.productName}
+            <img width="30" src={suggestionProduct.images[0].url} alt={suggestionProduct.productName} />
+            {suggestionProduct.productName}
           </div>
         ))
       )}

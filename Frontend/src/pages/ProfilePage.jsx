@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { setUser, login } from "../slices/authSlice";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import api from "../api/api";
+import LoginAlertModal from "../components/LoginAlertModal";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -16,69 +17,77 @@ const ProfilePage = () => {
   const user = useSelector((state) => state.auth.user);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const [isLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
+  const [loginAlert, setLoginAlert] = useState(false);
 
   const { uploadAvatar: handleImageChange } = useUploadAvatar();
   const [storedUser, setStoredUser] = useLocalStorage("user", null);
-  
-  useEffect(() => {
-    if (!isLoggedIn && isLoggedInLocalStorage) {
-      dispatch(login(storedUser));
-    }
-  }, [isLoggedInLocalStorage, storedUser, dispatch]);
-  
-
   
   const [form, setForm] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch user profile data when component mounts
-  
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    console.log("ProfilePage mounted", isLoggedIn, isLoggedInLocalStorage, storedUser);
+  });
+
+  // Consolidated auth and profile loading logic
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeProfile = async () => {
       try {
-        setLoading(true);
-        const { data } = await api.get('/users/profile');
-
-        if (data && data.user) {
-          // Update both Redux and localStorage with fresh data
-          console.log("Fetched user profile:", data.user);
-          dispatch(setUser(data.user));
-          setStoredUser(data.user);
-          // Initialize form with user data
-          setForm(data.user);
+        // Step 1: Restore from localStorage if not logged in
+        if (!isLoggedIn && isLoggedInLocalStorage && storedUser) {
+          dispatch(login(storedUser));
+          setForm(storedUser);
+          setLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-        setError(err.message || "Failed to load profile");
 
-        // If API call fails but we have stored user, use that as fallback
-        if (!user && storedUser) {
+        // Step 2: Not logged in and no stored data - show login alert
+        if (!isLoggedIn && !isLoggedInLocalStorage) {
+          setLoading(false);
+          setLoginAlert(true);
+          return;
+        }
+
+        // Step 3: Logged in - fetch fresh profile data
+        if (isLoggedIn) {
+          setLoading(true);
+          const { data } = await api.get('/users/profile');
+
+          if (isMounted && data?.user) {
+            dispatch(setUser(data.user));
+            setStoredUser(data.user);
+            setForm(data.user);
+          }
+          
+        }
+        else
+          {
+            console.log("No user data in profile response");
+            setLoginAlert(true);
+          }
+      } catch (err) {
+        console.error("Profile initialization error:", err);
+        
+        // Fallback to stored user on API error
+        if (isMounted && storedUser) {
           dispatch(setUser(storedUser));
           setForm(storedUser);
-        }
+        } 
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    if (isLoggedIn) {
-      fetchUserProfile();
+    initializeProfile();
 
-    } else if (storedUser && isLoggedIn) {
-
-      // If not logged in but we have stored user, use that
-      console.log("Using stored user:", storedUser, isLoggedInLocalStorage);
-      setTimeout(() => {
-        dispatch(login(storedUser));
-        setForm(storedUser);
-        setLoading(false);
-      }, 2000);
-    } else {
-      setLoading(false);
-    }
-  }, [isLoggedIn, dispatch]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoggedIn, isLoggedInLocalStorage, dispatch]);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -89,40 +98,23 @@ const ProfilePage = () => {
   // Save updated profile data
   const handleSave = async () => {
     try {
-      // API call to update profile
+      setLoading(true);
       const { data } = await api.put('/users/update-profile', form);
 
-      if (data && data.user) {
-        // Update Redux and localStorage with updated data
-        dispatch(setUser(data.user));
-        setStoredUser(data.user);
-        setForm(data.user);
-      } else {
-        // Fallback if API doesn't return user object
-        dispatch(setUser(form));
-        setStoredUser(form);
-      }
-
+      const updatedUser = data?.user || form;
+      
+      // Update all state stores
+      dispatch(setUser(updatedUser));
+      setStoredUser(updatedUser);
+      setForm(updatedUser);
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating profile:", err);
-      // Could add toast notification here
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (!isLoggedIn) {
-    return (
-      <div className="text-center text-foreground mt-20">
-        <p className="text-lg mb-4">You are not logged in.</p>
-        <Button
-          onClick={() => navigate("/login/user")}
-          className="bg-primary text-foreground hover:bg-secondary"
-        >
-          Go to Login
-        </Button>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -150,6 +142,7 @@ const ProfilePage = () => {
   const avatarUrl = user?.avatar?.url || user?.avatar || "/images/default-avatar.png";
   console.log("Avatar URL:", avatarUrl);
   return (
+
     <div className="max-w-4xl mx-auto p-6 mt-10">
       <h1 className="text-3xl font-bold text-foreground mb-6 text-center">
         My Profile
@@ -195,8 +188,9 @@ const ProfilePage = () => {
             <Button
               onClick={() => {
                 if (isEditing) {
-                  // Reset form when canceling edit
-                  setForm(user || storedUser);
+                  // Reset form to current user data when canceling
+                  setForm(user || storedUser || {});
+                  setError(null);
                 }
                 setIsEditing(!isEditing);
               }}
@@ -295,6 +289,11 @@ const ProfilePage = () => {
           <p className="text-foreground/70">You have no recent orders.</p>
         </div>
       </div>
+
+      <LoginAlertModal 
+        isOpen={loginAlert} 
+        onClose={() => {setLoginAlert(false); navigate("/"); }} 
+      />
     </div>
   );
 };

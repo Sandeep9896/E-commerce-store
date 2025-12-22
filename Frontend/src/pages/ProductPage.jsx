@@ -5,6 +5,7 @@ import { Card } from "../components/ui/card";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../slices/cartSlice";
 import { useLocation } from "react-router-dom";
+import useAddToCart from "../hooks/useAddToCart";
 import {
   Select,
   SelectTrigger,
@@ -25,6 +26,7 @@ const ProductPage = () => {
   const [active, setActive] = useState(null);
   const location = useLocation();
   const { category } = location.state || { category: "all" };
+  const addToCart = useAddToCart();
   useEffect(() => {
     console.log("Filtering by category from state:", category);
     if (category && category !== "all") {
@@ -72,27 +74,12 @@ const ProductPage = () => {
   };
 
   // 🔹 Add to Cart
-  const handleAddToCart = async (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.target.textContent = "Added!";
-    setTimeout(() => {
-      e.target.textContent = "Add to Cart";
-    }, 500);
-
-    dispatch(addToCart(product));
-    console.log("Added to cart:", product);
-    try {
-            await
-        api.post('/users/addToCart', {
-            productId: product._id,
-            quantity: 1
-            
-        });
-        } catch (error) {
-            console.error("Error adding to cart:", error);
-        }
-  };
+  // const handleAddToCart = async (e, product) => {
+  //   e.preventDefault();
+  //   console.log("Adding to cart:", product);
+  //   addToCart(e, product);
+    
+  // };
 
   // 🔹 Category Filter Logic
   const filteredProducts =
@@ -144,7 +131,7 @@ const ProductPage = () => {
                   }`}
                 >
                   <Button
-                    onClick={(e) => handleAddToCart(e, product)}
+                    onClick={(e) => addToCart(e, product)}
                     className="bg-primary text-foreground hover:bg-secondary text-sm font-medium px-3 py-2 rounded-md"
                   >
                     Add to Cart

@@ -1,8 +1,8 @@
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import api from "../api/api";
-import  useLogin from "../hooks/useLogin";
- 
+import useLogin from "../hooks/useLogin";
+
 // Custom hook: valid place to use hooks
 
 const UserLogin = () => {
@@ -13,8 +13,19 @@ const UserLogin = () => {
       <form className="flex flex-col gap-4" onSubmit={onSubmit}>
         <Input type="email" name="email" placeholder="Email" required />
         <Input type="password" name="password" placeholder="Password" required />
+        <p className="text-sm text-muted-foreground text-center mt-4">
+        By continuing, you agree to our{" "}
+        <span className="text-primary cursor-pointer hover:underline">
+          Terms of Service
+        </span>{" "}
+        and{" "}
+        <span className="text-primary cursor-pointer hover:underline">
+          Privacy Policy
+        </span>
+      </p>
         <Button>Login</Button>
       </form>
+      
     </div>
   );
 };
