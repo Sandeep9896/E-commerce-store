@@ -35,7 +35,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     address: {
-      type: String
+      street: { type: String, default: "" },
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      pincode: { type: String, default: "" },
     }
     ,
     cart: [

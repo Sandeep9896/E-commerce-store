@@ -15,5 +15,8 @@ router.delete("/cart/:productId", userProtect, userController.removeFromCart);
 router.delete("/cart", userProtect, userController.clearCart);
 router.put("/updateCart", userProtect, userController.updateCart);
 router.get("/search/:query",  userController.searchProducts);
+router.post("/cart-merge", userProtect, userController.mergeCart);
+router.post("/addOrder", userProtect, userController.addOrder);
+router.post('/fetch-orders', userProtect, userController.fetchOrders);
 
 export default router;

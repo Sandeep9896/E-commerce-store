@@ -6,6 +6,7 @@ const HandleCheckOut = ({
   isOpen,
   onClose,
   address,
+  phone,
   onProceed,
   onChangeAddress
 }) => {
@@ -40,7 +41,7 @@ const HandleCheckOut = ({
             {address.state} - {address.pincode}
           </p>
           <p className="text-sm text-muted-foreground">
-            Phone: {address.phone}
+            Phone: {phone}
           </p>
         </div>
 

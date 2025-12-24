@@ -55,6 +55,10 @@ export default function ProductCarousel() {
     // };
     const handleSearch = async (searchTerm) => {
         console.log("Searching for:", searchTerm);
+        if (!searchTerm) {
+            setSuggestions([]);
+            return;
+        }
         try {
             const response = await api.get(`/users/search/${searchTerm}`);
             console.log("Search results:", response.data.products);

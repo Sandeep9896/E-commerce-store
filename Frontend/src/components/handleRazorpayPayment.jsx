@@ -1,9 +1,9 @@
 import api from "../api/api";
 
-const handleRazorpayPayment = async (amount) => {
+const handleRazorpayPayment = async (amount, onsuccess,user) => {
 
   // create order from backend
-  const res = await api.post("/users/create-order", { amount });
+  const res = await api.post("/users/create-order", { amount});
 
   const order = await res.data;
 
@@ -15,13 +15,16 @@ const handleRazorpayPayment = async (amount) => {
     description: "Order Payment",
     order_id: order.id,
     handler: function (response) {
-      alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
+      // alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
       // You can redirect to success page here
+      if (typeof onsuccess === "function") {
+        onsuccess(response.razorpay_order_id);
+      }
     },
     prefill: {
-      name: "Customer Name",
-      email: "customer@example.com",
-      contact: "9999999999",
+      name: user?.name || "Customer",
+      email: user?.email || "customer@example.com",
+      contact: user?.phone || "9999999999",
     },
     theme: {
       color: "#6366f1",

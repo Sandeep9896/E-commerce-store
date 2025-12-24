@@ -21,15 +21,24 @@ const ProfilePage = () => {
 
   const { uploadAvatar: handleImageChange } = useUploadAvatar();
   const [storedUser, setStoredUser] = useLocalStorage("user", null);
-  
+
   const [form, setForm] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    console.log("ProfilePage mounted", isLoggedIn, isLoggedInLocalStorage, storedUser);
-  });
+    isLoggedIn && (async () => {
+      try {
+        const { data } = await api.post('/users/fetch-orders');
+        console.log("Fetched orders:", data);
+        setOrders(data.orders || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
+    })();
+  }, [isLoggedIn]);
 
   // Consolidated auth and profile loading logic
   useEffect(() => {
@@ -56,27 +65,27 @@ const ProfilePage = () => {
         if (isLoggedIn) {
           setLoading(true);
           const { data } = await api.get('/users/profile');
+          console.log("Fetched profile data:", data);
 
           if (isMounted && data?.user) {
             dispatch(setUser(data.user));
             setStoredUser(data.user);
             setForm(data.user);
           }
-          
+
         }
-        else
-          {
-            console.log("No user data in profile response");
-            setLoginAlert(true);
-          }
+        else {
+          console.log("No user data in profile response");
+          setLoginAlert(true);
+        }
       } catch (err) {
         console.error("Profile initialization error:", err);
-        
+
         // Fallback to stored user on API error
         if (isMounted && storedUser) {
           dispatch(setUser(storedUser));
           setForm(storedUser);
-        } 
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -92,7 +101,17 @@ const ProfilePage = () => {
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    if (name === "street" || name === "city" || name === "state" || name === "pincode") {
+      setForm(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [name]: value
+        }
+      }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Save updated profile data
@@ -100,9 +119,10 @@ const ProfilePage = () => {
     try {
       setLoading(true);
       const { data } = await api.put('/users/update-profile', form);
+      console.log("Profile update response:", data);
 
       const updatedUser = data?.user || form;
-      
+
       // Update all state stores
       dispatch(setUser(updatedUser));
       setStoredUser(updatedUser);
@@ -213,7 +233,7 @@ const ProfilePage = () => {
                 name="name"
                 value={form.name || ""}
                 onChange={handleChange}
-                className="flex-1"
+                className="flex-1 text-foreground"
               />
             ) : (
               <p className="text-foreground text-lg">{form.name || "Not set"}</p>
@@ -229,7 +249,7 @@ const ProfilePage = () => {
                 name="email"
                 value={form.email || ""}
                 onChange={handleChange}
-                className="flex-1"
+                className="flex-1 text-foreground"
                 disabled={true} // Email should not be editable
               />
             ) : (
@@ -246,7 +266,7 @@ const ProfilePage = () => {
                 name="phone"
                 value={form.phone || ""}
                 onChange={handleChange}
-                className="flex-1"
+                className="flex-1 text-foreground"
               />
             ) : (
               <p className="text-foreground text-lg">{form.phone || "Not set"}</p>
@@ -257,15 +277,45 @@ const ProfilePage = () => {
           <div className="flex items-center gap-3">
             <MapPin className="text-primary" />
             {isEditing ? (
-              <Input
-                type="text"
-                name="address"
-                value={form.address || ""}
-                onChange={handleChange}
-                className="flex-1"
-              />
+              <div className="flex flex-col w-full gap-2">
+                <label className="text-foreground font-medium">Street Address</label>
+                <Input
+                  type="text"
+                  name="street"
+                  value={form.address?.street || ""}
+                  onChange={handleChange}
+                  className="flex-1 text-foreground"
+                />
+                <label className="text-foreground font-medium"> City </label>
+                <Input
+                  type="text"
+                  name="city"
+                  value={form.address?.city || ""}
+                  onChange={handleChange}
+                  className="flex-1 text-foreground p-2"
+                />
+                <label className="text-foreground font-medium"> State </label>
+                <Input
+                  type="text"
+                  name="state"
+                  value={form.address?.state || ""}
+                  onChange={handleChange}
+                  className="flex-1 text-foreground p-2"
+                />
+                <label className="text-foreground font-medium"> Pincode </label>
+                <Input
+                  type="text"
+                  name="pincode"
+                  value={form.address?.pincode || ""}
+                  onChange={handleChange}
+                  className="flex-1 text-foreground p-2"
+                />
+
+
+              </div>
+
             ) : (
-              <p className="text-foreground text-lg">{form.address || "Not set"}</p>
+              <p className="text-foreground text-lg">{form.address?.street + ", " + form.address?.city + ", " + form.address?.state + " - " + form.address?.pincode || "Not set"}</p>
             )}
           </div>
 
@@ -286,13 +336,63 @@ const ProfilePage = () => {
           Recent Orders
         </h2>
         <div className="bg-accent/50 rounded-lg p-4 shadow-md text-sm sm:text-base">
-          <p className="text-foreground/70">You have no recent orders.</p>
+          {/* <p className="text-foreground/70">You have no recent orders.</p> */}
+          {orders.length === 0 && (
+            <p className="text-foreground/70">You have no recent orders.</p>
+          )}
+          {orders.length > 0 && orders.map((order) => (
+            <div
+              key={order._id}
+              className="flex flex-col gap-2 py-4 px-3 rounded-lg bg-accent/40 border border-border shadow-sm hover:shadow-md transition"
+            >
+              {/* Top Row */}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">
+                  Order #{order._id.slice(-6)}
+                </p>
+
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium
+        ${order.orderStatus === "Delivered"
+                      ? "bg-green-100 text-green-700"
+                      : order.orderStatus === "Shipped"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }
+      `}
+                >
+                  {order.orderStatus}
+                </span>
+              </div>
+
+              {/* Meta Info */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground">
+                <p>
+                  📅 {new Date(order.createdAt).toLocaleDateString()}
+                </p>
+                <p>
+                  💳 Razorpay
+                </p>
+              </div>
+
+              {/* Amount */}
+              <div className="flex justify-between items-center pt-2 border-t border-border">
+                <p className="text-sm text-foreground">
+                  Total Amount
+                </p>
+                <p className="text-base font-semibold text-foreground">
+                  ₹{order.totalAmount.toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+          ))}
         </div>
       </div>
 
-      <LoginAlertModal 
-        isOpen={loginAlert} 
-        onClose={() => {setLoginAlert(false); navigate("/"); }} 
+      <LoginAlertModal
+        isOpen={loginAlert}
+        onClose={() => { setLoginAlert(false); navigate("/"); }}
       />
     </div>
   );

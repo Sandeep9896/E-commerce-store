@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import Order from "../models/ordersModel.js";
 import deleteImageFromCloudinary from "../utils/deleteImageCloudinary.js";
 import generateToken  from "../utils/generateToken.js";
 import { encryptPassword } from "../utils/hashPassword.js";
@@ -69,18 +70,18 @@ const updateProfile = async (req, res) => {
         // Extract fields from whatever structure is sent
         // If you're sending the entire form object
         const formData = req.body;
-        
+        console.log("Update profile request data:", formData.street, formData.city, formData.state, formData.pincode);
         // Only allow specific fields to be updated (security best practice)
-        const updateData = {};
-        if (formData.name) updateData.name = formData.name;
-        if (formData.phone) updateData.phone = formData.phone;
-        if (formData.address) updateData.address = formData.address;
-        // Don't allow email updates through this endpoint (would need verification)
+        const updateProfileData = {
+            name: formData.name,
+            phone: formData.phone,
+            address: formData.address
+        };
         
         // Find and update in one step
         const user = await User.findByIdAndUpdate(
             req.user._id, 
-            updateData, 
+            updateProfileData, 
             { new: true, runValidators: true }
         );
         
@@ -248,6 +249,92 @@ const searchProducts = async (req, res) => {
     }
 };
 
+const mergeCart = async (req, res) => {
+    try {
+        const { cartItems } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        for (const newItem of cartItems) {
+            const existingItemIndex = user.cart.findIndex(item => item?.product?.toString() === newItem._id);
+            if (existingItemIndex >= 0) {
+                user.cart[existingItemIndex].quantity += newItem.quantity;
+            } else {
+                user.cart.push({ product: newItem._id, quantity: newItem.quantity });
+            }
+        }
+        await user.save();
+        res.status(200).json({ message: "Cart merged successfully", cart: user.cart });
+    } catch (error) {
+        console.error("Merge cart error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+const addOrder = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("cart.product");
+
+    console.log(user.cart);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.cart.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    const newOrder = new Order({
+      user: user._id,
+      products: user.cart.map(item => ({
+        product: item.product._id,
+        name: item.product.productName,
+        price: item.product.price,
+        quantity: item.quantity,
+      })),
+      totalAmount: user.cart.reduce(
+        (total, item) => total + item.product.price * item.quantity,
+        0
+      ),
+      shippingAddress: { ...user.address }, // safe copy
+      paymentMethod: "Razorpay",
+      paymentStatus: "Completed",
+    });
+
+    await newOrder.save();
+
+    user.orders.push(newOrder._id);
+    user.cart = [];
+    await user.save();
+
+    res.status(201).json({
+      message: "Order placed successfully",
+      orderId: newOrder._id
+    });
+
+  } catch (error) {
+    console.error("Add order error:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
+const fetchOrders = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate('orders');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ orders: user.orders });
+    } catch (error) {
+        console.error("Fetch orders error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
 
 
-export default { register, getProfile, updateProfile, uploadAvatar, createOrder, addToCart, getCart, removeFromCart, clearCart, updateCart, searchProducts };
+export default { register, getProfile, updateProfile, uploadAvatar, createOrder, addToCart, getCart, removeFromCart, clearCart, updateCart, searchProducts, mergeCart, addOrder, fetchOrders };

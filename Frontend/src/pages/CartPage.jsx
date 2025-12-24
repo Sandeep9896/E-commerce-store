@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Button } from "../components/ui/button"; // shadcn UI button (or your own)
 import { Trash2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,60 +10,115 @@ import api from "../api/api";
 import HandleCheckOut from "../components/HandleCheckOut";
 import { setCartItems } from '../slices/cartSlice'
 import LoginAlertModal from "../components/LoginAlertModal";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { OrderSuccessfulModal } from "../components/orderSuccesFulModal";
+import { clearCart } from "../slices/cartSlice";
+import { set } from "lodash";
 
 const CartPage = () => {
   const dispatch = useDispatch();
-
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const cartItems = useSelector((state) => state.cart.cartItems);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const isloggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const user = useSelector((state) => state.auth.user);
+  const [address, setAddress] = useState(user?.address || "");
+  let [cart, setCart] = useLocalStorage("cart", []);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+  useEffect(() => {
+    setAddress(user?.address || "");
+  }, [user]);
 
   useEffect(() => {
-    // Example API call to fetch initial data
-    const fetchData = async () => {
+    const mergeCart = async () => {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      if (isLoggedIn && localCart.length > 0) {
+        try {
+          await api.post("/users/cart-merge", {
+            cartItems: localCart
+          });
+
+          // ✅ IMPORTANT: clear localStorage after merge
+          localStorage.removeItem("cart");
+        } catch (error) {
+          console.error("Cart merge failed:", error);
+        }
+      }
+    };
+
+    const fetchServerCart = async () => {
       try {
-        const response = await api.get('/users/cart');
+        const response = await api.get("/users/cart");
         const cart = response.data?.cart || [];
 
-        const normalizedItems = cart.map((item) => ({
-          _id: item?.product?._id,
-          productName: item?.product?.productName,
-          price: item?.product?.price,
-          image: item?.product?.images?.[0]?.url,
-          quantity: item?.quantity ?? 0
+        const normalizedItems = cart.map(item => ({
+          _id: item.product._id,
+          productName: item.product.productName,
+          price: item.product.price,
+          image: item.product.images?.[0]?.url,
+          quantity: item.quantity
         }));
 
         dispatch(setCartItems(normalizedItems));
       } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-      finally {
+        console.error("Error fetching cart:", error);
+      } finally {
         setLoading(false);
       }
-      console.log("Fetched and set cart items")
     };
 
-    fetchData();
-  }, [dispatch]);
+    if (isLoggedIn) {
+      mergeCart().then(fetchServerCart);
+    } else {
+      // guest user → load only localStorage cart
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+      dispatch(setCartItems(localCart));
+      setLoading(false);
+    }
+
+  }, [isLoggedIn, dispatch]);
 
 
   const handleQuantityChange = async (item) => {
     dispatch(addToCart(item));
+
+    // Keep localStorage in sync for guests
+    if (!isLoggedIn) {
+      const updatedCart = cart.map((cartItem) =>
+        cartItem._id === item._id
+          ? { ...cartItem, quantity: cartItem.quantity + 1 }
+          : cartItem
+      );
+      setCart(updatedCart);
+    }
+
     try {
-      await
-        api.put('/users/updateCart', {
-          productId: item._id,
-          quantity: item.quantity + 1
-        });
+      await api.put('/users/updateCart', {
+        productId: item._id,
+        quantity: item.quantity + 1
+      });
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
-
   };
 
   const handleRemove = async (item, deletedItem = false) => {
     dispatch(removeFromCart({ item, deletedItem }));
+
+    // Keep localStorage in sync for guests
+    if (!isLoggedIn) {
+      const updatedCart = deletedItem || item.quantity === 1
+        ? cart.filter((cartItem) => cartItem._id !== item._id)
+        : cart.map((cartItem) =>
+            cartItem._id === item._id
+              ? { ...cartItem, quantity: cartItem.quantity - 1 }
+              : cartItem
+          );
+      setCart(updatedCart);
+    }
 
     if (deletedItem || item.quantity === 1) {
       try {
@@ -75,11 +130,10 @@ const CartPage = () => {
     }
 
     try {
-      api.put('/users/updateCart', {
+      await api.put('/users/updateCart', {
         productId: item._id,
         quantity: item.quantity - 1
       });
-
     } catch (error) {
       console.error("Error removing from cart:", error);
     }
@@ -93,14 +147,8 @@ const CartPage = () => {
   const [open, setOpen] = useState(false);
   const [showLoginAlert, setShowLoginAlert] = useState(false);
 
-  const address = {
-    name: "Sandeep Sahani",
-    street: "Sector 22",
-    city: "Chandigarh",
-    state: "Punjab",
-    pincode: "160022",
-    phone: "9876543210"
-  };
+  // Validate before checkout if logged in then open address confirm modal else show login alert
+
   const handleValidate = () => {
     console.log("Validating checkout details...");
     if (isloggedIn) {
@@ -112,18 +160,40 @@ const CartPage = () => {
 
   }
 
+  // Proceed to payment handler and it call from address confirm modal, it will call razorpay payment gateway
   const handleProceed = () => {
     setOpen(false);
 
-    handleRazorpayPayment(subtotal + 50);
+    handleRazorpayPayment(subtotal + 50, handlePaymentSuccess, user);
     console.log("Proceeding to payment...");
   };
+  // callback function after payment successfull
+  const handlePaymentSuccess = (orderId) => {
+    setOrderSuccess(true);
+    setOrderId(orderId);
+
+    api.post('/users/addOrder');
+    // You can also clear the cart here if needed
+    dispatch(clearCart());
+    localStorage.removeItem("cart");
+    
+  }
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
         <p className="text-foreground text-lg">Loading your cart...</p>
       </div>
     );
+  }
+
+  if (orderSuccess) {
+    return <OrderSuccessfulModal
+      isOpen={orderSuccess}
+      onClose={() => {setOrderSuccess(false); navigate("/")}}
+      orderId={orderId}
+    />
+      ;
+
   }
 
   if (cartItems.length === 0) {
@@ -159,6 +229,7 @@ const CartPage = () => {
           isOpen={open}
           onClose={() => setOpen(false)}
           address={address}
+          phone={user?.phone || ""}
           onProceed={handleProceed}
           onChangeAddress={() => console.log("Change address clicked")}
         />

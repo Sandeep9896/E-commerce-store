@@ -36,7 +36,7 @@ function App() {
         dispatch(login({ user: storedUser, accessToken: storedToken }));
       }
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
      api.post('/auth/health' );
