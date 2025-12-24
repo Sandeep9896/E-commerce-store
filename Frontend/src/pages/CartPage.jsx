@@ -11,7 +11,7 @@ import HandleCheckOut from "../components/HandleCheckOut";
 import { setCartItems } from '../slices/cartSlice'
 import LoginAlertModal from "../components/LoginAlertModal";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { OrderSuccessfulModal } from "../components/orderSuccesFulModal";
+import { OrderSuccessfulModal } from "../components/OrderSuccesFulModal";
 import { clearCart } from "../slices/cartSlice";
 import { set } from "lodash";
 
