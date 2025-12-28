@@ -165,7 +165,7 @@ const UserLogin = ({ onClose }) => {
           </form>
         </TabsContent>
       </Tabs>
-      <LoadingOverlay isLoading={loading} />
+      <LoadingOverlay isLoading={loading||signupLoading} />
     </div>
   );
 };
