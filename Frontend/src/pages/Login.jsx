@@ -21,7 +21,7 @@ const UserLogin = ({ onClose }) => {
   const location = useLocation();
   const [data, setData] = useState(location.state?.data || "Login");
   const [storedUser, setStoredUser] = useLocalStorage("user", null);
-  const [token, setToken] = useLocalStorage("token", null);
+  const [token, setToken] = useLocalStorage("accessToken", null);
   const [isLoggedInLocalStorage, setIsLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
   const { handleLogin, loading, error: loginError, setError: setLoginError } = useLogin("user");
   let [signupLoading, setSignupLoading] = useState(false);
