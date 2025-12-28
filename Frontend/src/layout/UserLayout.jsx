@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,10 +14,11 @@ export default function UserLayout() {
 
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const cartItemsCount = useSelector((state) => state.cart.cartItems.length);
   const user = useSelector((state) => state.auth.user?.role || "user");
   const [authOpen, setAuthOpen] = useState(false);
   let [loginpageactive, setLoginPageActive] = useState(false);
-  let profilePath = "/user/profile";
+  
   useEffect(() => {
     if (location.pathname.startsWith("/login/user")) {
       setLoginPageActive(true);
@@ -27,33 +28,38 @@ export default function UserLayout() {
     }
   }, [location.pathname]);
 
-  if (user == "seller") {
-    profilePath = "/seller/profile";
-  }
-  const navItems = [
+  const profilePath = useMemo(() => {
+    return user === "seller" ? "/seller/profile" : "/user/profile";
+  }, [user]);
+
+  const navItems = useMemo(() => [
     { label: "Home", path: "/" },
     { label: "Products", path: "/products" },
     {
       label: (
         <>
-          Cart {cartItems.length > 0 && <sup className="text-xs bg-amber-200 group-hover:text-black p-1 rounded-full ">{cartItems.length}</sup>}
+          Cart {cartItemsCount > 0 && <sup className="text-xs bg-amber-200 group-hover:text-black p-1 rounded-full ">{cartItemsCount}</sup>}
         </>
       ),
       path: "/cart"
-    }, { label: "Profile", path: profilePath },
-  ];
+    }, 
+    { label: "Profile", path: profilePath },
+  ], [cartItemsCount, profilePath]);
 
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isActive = (path) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+  const isActive = useCallback((path) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path),
+    [location.pathname]
+  );
 
-  const handleNav = (path) => {
+  const handleNav = useCallback((path) => {
     navigate(path);
     setMobileOpen(false);
-  };
-  const handleLogout = async () => {
+  }, [navigate]);
+
+  const handleLogout = useCallback(async () => {
     try {
       const token = localStorage.getItem("accessToken");
 
@@ -86,7 +92,23 @@ export default function UserLayout() {
       dispatch(logout());
       navigate("/login/user", { replace: true });
     }
-  };
+  }, [dispatch, navigate]);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileOpen((o) => !o);
+  }, []);
+
+  const handleAuthToggle = useCallback(() => {
+    if (isLoggedIn) {
+      handleLogout();
+    } else {
+      setAuthOpen(true);
+    }
+  }, [isLoggedIn, handleLogout]);
+
+  const closeAuthModal = useCallback(() => {
+    setAuthOpen(false);
+  }, []);
 
   useEffect(() => {
     console.log("UserLayout - isLoggedIn:", isLoggedIn);
@@ -121,16 +143,16 @@ export default function UserLayout() {
               </button>
             );
           })}
-
         </nav>
-        <Button disabled={loginpageactive} className={"hidden sm:flex  hover:bg-accent hover:text-background  "} variant="outline" onClick={() => { isLoggedIn ? handleLogout() : setAuthOpen(true) }}>
+        
+        <Button disabled={loginpageactive} className={"hidden sm:flex  hover:bg-accent hover:text-background  "} variant="outline" onClick={handleAuthToggle}>
           {isLoggedIn ? "Logout" : "Login"}
         </Button>
 
         {/* Mobile Hamburger */}
         <button
           type="button"
-          onClick={() => setMobileOpen((o) => !o)}
+          onClick={toggleMobileMenu}
           className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border  text-accent hover:bg-primary   "
         >
           <span className="sr-only">Menu</span>
@@ -169,7 +191,7 @@ export default function UserLayout() {
               );
             })}
             <button
-              onClick={() => { isLoggedIn ? handleLogout() : setAuthOpen(true) }}
+              onClick={handleAuthToggle}
               className="block w-full text-left px-4 py-2 text-sm text-accent hover:bg-primary hover:text-foreground"
               disabled={loginpageactive}
             >
@@ -180,7 +202,7 @@ export default function UserLayout() {
       </header>
 
       <main className="flex-1 p-6">
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        <AuthModal open={authOpen} onClose={closeAuthModal} />
         <Outlet />
       </main>
 

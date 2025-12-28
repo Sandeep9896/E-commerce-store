@@ -20,7 +20,7 @@ const ProfilePage = () => {
   const [loginAlert, setLoginAlert] = useState(false);
 
   const { uploadAvatar: handleImageChange } = useUploadAvatar();
-  const [storedUser, setStoredUser] = useLocalStorage("user", null);
+  const [storedUser, setStoredUser] = useLocalStorage("user");
 
   const [form, setForm] = useState({});
   const [isEditing, setIsEditing] = useState(false);

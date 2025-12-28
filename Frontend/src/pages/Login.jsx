@@ -180,7 +180,9 @@ const UserLogin = ({ onClose }) => {
 
 
 const AdminLogin = () => {
-  const { handleLogin, loading } = useLogin("admin");
+  const { handleLogin, loading, error: loginError, setError: setLoginError } = useLogin("admin");
+  const [signupError, setSignupError] = useState(null);
+  
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-center">Admin Login</h2>
@@ -195,7 +197,9 @@ const AdminLogin = () => {
 };
 
 const SellerLogin = () => {
-  const { handleLogin, loading } = useLogin("seller");
+  const { handleLogin, loading, error: loginError, setError: setLoginError } = useLogin("seller");
+  const [signupError, setSignupError] = useState(null);
+  const [signupLoading, setSignupLoading] = useState(false);
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-center">Seller Login</h2>
