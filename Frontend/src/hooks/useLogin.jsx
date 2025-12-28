@@ -18,9 +18,8 @@ function useLogin(role) {
   const returnUrl = location.state?.returnUrl || `/${role}/profile`;
   const cartItems = useSelector((state) => state.cart.cartItems);
   const [loading, setLoading] = useState(false);
- useEffect(() => {
-        console.log(cartItems);
-      }, [cartItems]);
+  const [error, setError] = useState(null);
+
   const handleLogin = useCallback(
     async (e, formData) => {
       e.preventDefault();
@@ -52,12 +51,14 @@ function useLogin(role) {
         navigate(returnUrl); // ensure your route is lowercase
       } catch (err) {
         console.error("Login failed:", err);
+        setError(err.response?.data?.message || "Login failed. Please try again.");
+      } finally {
         setLoading(false);
       }
     },
     [dispatch, navigate, role, returnUrl]
   );
 
-  return { handleLogin, loading };
+  return { handleLogin, loading, error ,setError};
 }
 export default useLogin;

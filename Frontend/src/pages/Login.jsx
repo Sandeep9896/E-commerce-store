@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { useState } from "react";
+import LoginErrorModal from "../components/LoginErrorModal";
 
 
 // Custom hook: valid place to use hooks
@@ -22,8 +23,9 @@ const UserLogin = ({ onClose }) => {
   const [storedUser, setStoredUser] = useLocalStorage("user", null);
   const [token, setToken] = useLocalStorage("token", null);
   const [isLoggedInLocalStorage, setIsLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
-  const { handleLogin, loading } = useLogin("user");
+  const { handleLogin, loading, error: loginError, setError: setLoginError } = useLogin("user");
   let [signupLoading, setSignupLoading] = useState(false);
+  const [signupError, setSignupError] = useState(null);
   const userSignup = async (e) => {
     e.preventDefault();
     setSignupLoading(true);
@@ -50,6 +52,8 @@ const UserLogin = ({ onClose }) => {
       // onSubmit(e,formData); // Call login after successful signup
     } catch (error) {
       console.error("Signup failed:", error);
+      setSignupError(error.response?.data?.message || "Signup failed. Please try again.");
+      setSignupLoading(false);
     }
   };
 
@@ -109,7 +113,7 @@ const UserLogin = ({ onClose }) => {
               </span>
             </p>
 
-            <Button onClick={onClose} className="w-full mt-2">
+            <Button onClick={onClose}  className="w-full mt-2">
               Login
             </Button>
           </form>
@@ -166,6 +170,8 @@ const UserLogin = ({ onClose }) => {
         </TabsContent>
       </Tabs>
       <LoadingOverlay isLoading={loading||signupLoading} />
+      <LoginErrorModal errorMessage={loginError||signupError} onClose={() => { setLoginError(""); setSignupError(""); }} />
+
     </div>
   );
 };
