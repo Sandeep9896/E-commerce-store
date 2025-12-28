@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../slices/cartSlice";
 import { useLocation } from "react-router-dom";
 import useAddToCart from "../hooks/useAddToCart";
 import {
@@ -17,7 +15,6 @@ import {
 const ITEMS_PER_PAGE = 8;
 
 const ProductPage = () => {
-  const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,15 +23,14 @@ const ProductPage = () => {
   const [active, setActive] = useState(null);
   const location = useLocation();
   const { category } = location.state || { category: "all" };
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const addToCart = useAddToCart();
+
   useEffect(() => {
-    console.log("Filtering by category from state:", category);
     if (category && category !== "all") {
       setSelectedCategory(category);
-      
     }
   }, [category]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // 🔹 Fetch Products
   const fetchProducts = async (pageNum = 1, append = false) => {
@@ -82,10 +78,11 @@ const ProductPage = () => {
   // };
 
   // 🔹 Category Filter Logic
-  const filteredProducts =
+  const filteredProducts = useMemo(() => (
     selectedCategory === "all"
       ? products
-      : products.filter((product) => product.category === selectedCategory);
+      : products.filter((product) => product.category === selectedCategory)
+  ), [products, selectedCategory]);
 
   return (
     <div className="min-h-screen container mx-auto bg-background px-4 py-8 text-foreground">
