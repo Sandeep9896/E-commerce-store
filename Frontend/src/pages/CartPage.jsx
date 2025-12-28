@@ -13,7 +13,6 @@ import LoginAlertModal from "../components/LoginAlertModal";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { OrderSuccessfulModal } from "../components/OrderSuccesFulModal";
 import { clearCart } from "../slices/cartSlice";
-import { set } from "lodash";
 
 const CartPage = () => {
   const dispatch = useDispatch();

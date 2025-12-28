@@ -16,7 +16,7 @@ const ProfilePage = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const [isLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
+  const [isLoggedInLocalStorage] = useLocalStorage("isLoggedIn");
   const [loginAlert, setLoginAlert] = useState(false);
 
   const { uploadAvatar: handleImageChange } = useUploadAvatar();
@@ -159,7 +159,7 @@ const ProfilePage = () => {
   }
 
   // Get avatar URL safely
-  const avatarUrl = user?.avatar?.url || user?.avatar || "/images/default-avatar.png";
+  const avatarUrl = user?.avatar?.url || user?.avatar || "/images/user.svg";
   console.log("Avatar URL:", avatarUrl);
   return (
 

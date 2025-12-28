@@ -21,7 +21,7 @@ const options = {
 
 const register = async (req, res) => {
     // res.send("Register endpoint");
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const hashedPassword = await encryptPassword(password);
     const user = await User.findOne({ email });
@@ -29,7 +29,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: "User already exists" });
     }
 
-    const newUser = await User.create({ name: username, email, password: hashedPassword });
+    const newUser = await User.create({ name: name, email, password: hashedPassword });
 
     const refreshToken = generateToken(newUser._id, "30d");
     const accessToken = generateToken(newUser._id, "1d");
@@ -325,11 +325,14 @@ const addOrder = async (req, res) => {
 
 const fetchOrders = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate('orders');
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+const orders = await Order.find({ user: req.user._id })
+  .sort({ createdAt: -1 })
+  .limit(2);
+  console.log("Fetched orders:", orders);
+        if (!orders) {
+            return res.status(404).json({ message: "User not have any orders" });
         }
-        res.status(200).json({ orders: user.orders });
+        res.status(200).json({ orders: orders });
     } catch (error) {
         console.error("Fetch orders error:", error);
         res.status(500).json({ message: "Server error", error: error.message });

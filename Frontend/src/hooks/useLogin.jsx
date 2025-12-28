@@ -20,11 +20,15 @@ function useLogin(role) {
         console.log(cartItems);
       }, [cartItems]);
   return useCallback(
-    async (e) => {
+    async (e, formData) => {
       e.preventDefault();
       const form = e.currentTarget;
-      const formData = new FormData(form);
-      
+      if (!formData) {
+        var formData = new FormData(form);
+      }
+      else {
+        console.log("Using provided formData", formData.get("email"), formData.get("password"));
+      }
 
       // Support different field names per form
       const email =

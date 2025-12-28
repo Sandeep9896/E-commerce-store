@@ -126,7 +126,7 @@ const ProductPage = () => {
                 <div
                   className={`absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300 rounded-md ${
                     active === product._id
-                      ? "opacity-100"
+                      ? "opacity-100 "
                       : "opacity-0 sm:group-hover:opacity-100"
                   }`}
                 >

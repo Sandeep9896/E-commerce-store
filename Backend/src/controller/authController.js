@@ -5,6 +5,7 @@ import Admin from "../models/adminModel.js";
 import { matchPassword } from "../utils/hashPassword.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
+import { encryptPassword } from "../utils/hashPassword.js";
 
 const options = {
     httpOnly: true,
@@ -16,6 +17,8 @@ const options = {
 
 const login = async (req, res) => {
     const { email, password, role } = req.body;
+
+    console.log(`Login attempt for role: ${role}, email: ${email}, password: ${password}`);
 
     let Model;
     if (role === "admin") Model = Admin;
@@ -81,4 +84,21 @@ const healthCheck = (req, res) => {
     console.log("Health check OK");
 };
 
-export default { login, refreshAccessToken, logOut, healthCheck };
+const Usersignup = async (req, res) => {
+    const { name, email, password } = req.body;
+    console.log(req.body);
+    const hashedPassword = await encryptPassword(password);
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+        const newUser = new User({ name, email, password: hashedPassword });
+        await newUser.save();
+        res.status(201).json({ message: "User created successfully", user: newUser });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export default { login, refreshAccessToken, logOut, healthCheck, Usersignup };

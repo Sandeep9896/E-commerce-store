@@ -5,27 +5,45 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import api from "../api/api";
 import { clearCart } from "../slices/cartSlice";
+import AuthModal from "../components/AuthModal";
 
 
 export default function UserLayout() {
   const dispatch = useDispatch();
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const user = useSelector((state) => state.auth.user?.role || "user");
-  let profilePath = "/user/profile";
+  const location = useLocation();
 
-  if(user=="seller")
-  {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const user = useSelector((state) => state.auth.user?.role || "user");
+  const [authOpen, setAuthOpen] = useState(false);
+  let [loginpageactive, setLoginPageActive] = useState(false);
+  let profilePath = "/user/profile";
+  useEffect(() => {
+    if (location.pathname.startsWith("/login/user")) {
+      setLoginPageActive(true);
+    }
+    else {
+      setLoginPageActive(false);
+    }
+  }, [location.pathname]);
+
+  if (user == "seller") {
     profilePath = "/seller/profile";
   }
   const navItems = [
-  { label: "Home", path: "/" },
-  { label: "Products", path: "/products" },
-  { label: "Cart", path: "/cart" },
-  { label: "Profile", path: profilePath },
-];
+    { label: "Home", path: "/" },
+    { label: "Products", path: "/products" },
+    {
+      label: (
+        <>
+          Cart {cartItems.length > 0 && <sup className="text-xs bg-amber-200 group-hover:text-black p-1 rounded-full ">{cartItems.length}</sup>}
+        </>
+      ),
+      path: "/cart"
+    }, { label: "Profile", path: profilePath },
+  ];
 
   const navigate = useNavigate();
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path) =>
@@ -55,8 +73,9 @@ export default function UserLayout() {
 
       // ✅ Update Redux auth state
       setTimeout(() => {
-      dispatch(logout());
-      dispatch(clearCart());}, 100);
+        dispatch(logout());
+        dispatch(clearCart());
+      }, 100);
 
       // ✅ Redirect to login page
       navigate("/login/user", { replace: true });
@@ -93,7 +112,7 @@ export default function UserLayout() {
                 type="button"
                 onClick={() => handleNav(item.path)}
                 aria-current={active ? "page" : undefined}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${active
+                className={`px-3 py-2 group rounded-md text-sm font-medium transition-colors ${active
                   ? "bg-accent text-background shadow-sm"
                   : "text-foreground hover:bg-accent hover:text-background"
                   }`}
@@ -104,7 +123,7 @@ export default function UserLayout() {
           })}
 
         </nav>
-        <Button className={"hidden sm:flex  hover:bg-accent hover:text-background  "} variant="outline" onClick={() => { isLoggedIn ? handleLogout() : handleNav("/login/user") }}>
+        <Button disabled={loginpageactive} className={"hidden sm:flex  hover:bg-accent hover:text-background  "} variant="outline" onClick={() => { isLoggedIn ? handleLogout() : setAuthOpen(true) }}>
           {isLoggedIn ? "Logout" : "Login"}
         </Button>
 
@@ -150,8 +169,9 @@ export default function UserLayout() {
               );
             })}
             <button
-              onClick={() => { isLoggedIn ? handleLogout() : handleNav("/login/user") }}
+              onClick={() => { isLoggedIn ? handleLogout() : setAuthOpen(true) }}
               className="block w-full text-left px-4 py-2 text-sm text-accent hover:bg-primary hover:text-foreground"
+              disabled={loginpageactive}
             >
               {isLoggedIn ? "Logout" : "Login"}
             </button>
@@ -160,6 +180,7 @@ export default function UserLayout() {
       </header>
 
       <main className="flex-1 p-6">
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
         <Outlet />
       </main>
 
