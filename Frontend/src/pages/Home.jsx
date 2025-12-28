@@ -7,7 +7,6 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../slices/cartSlice";
 import api from "../api/api";
 import SuggestionBox from "../components/SuggestionBox";
-import { set } from "lodash";
 import useAddToCart from "../hooks/useAddToCart";
 
 

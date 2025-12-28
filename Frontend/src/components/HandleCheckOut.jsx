@@ -114,7 +114,7 @@ const HandleCheckOut = ({
 
   const handleProceed = () => {
     if(product){
-    handleRazorpayPayment(product.price + 50, handlePaymentSuccess, user);
+    handleRazorpayPayment(product.price , handlePaymentSuccess, user);
     return;
     }
     handleRazorpayPayment(totalAmount + 50, handlePaymentSuccess, user);
