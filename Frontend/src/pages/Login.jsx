@@ -7,6 +7,9 @@ import { useDispatch,useSelector } from "react-redux";
 import { login } from "../slices/authSlice";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import LoadingOverlay from "../components/LoadingOverlay";
+import { useState } from "react";
 
 
 // Custom hook: valid place to use hooks
@@ -14,12 +17,16 @@ import { useNavigate } from "react-router-dom";
 const UserLogin = ({ onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [data, setData] = useState(location.state?.data || "Login");
   const [storedUser, setStoredUser] = useLocalStorage("user", null);
   const [token, setToken] = useLocalStorage("token", null);
   const [isLoggedInLocalStorage, setIsLoggedInLocalStorage] = useLocalStorage("isLoggedIn", false);
-  const onSubmit = useLogin("user");
+  const { handleLogin, loading } = useLogin("user");
+  let [signupLoading, setSignupLoading] = useState(false);
   const userSignup = async (e) => {
     e.preventDefault();
+    setSignupLoading(true);
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name");
     const email = formData.get("email");
@@ -37,6 +44,7 @@ const UserLogin = ({ onClose }) => {
       setStoredUser(data.user);
       setToken(data.accessToken);
       setIsLoggedInLocalStorage(true);
+      setSignupLoading(false);
       navigate("/user/profile");
       // Optionally, you can auto-login the user after signup
       // onSubmit(e,formData); // Call login after successful signup
@@ -48,7 +56,7 @@ const UserLogin = ({ onClose }) => {
   return (
     <div className="flex items-start sm:items-center justify-center p-4  ">
       <Tabs
-        defaultValue="Login"
+        defaultValue={data}
         className="w-full max-w-md rounded-2xl  bg-card p-6 shadow-lg"
       >
         {/* Tabs Header */}
@@ -69,7 +77,7 @@ const UserLogin = ({ onClose }) => {
 
         {/* Login */}
         <TabsContent value="Login">
-          <form className="space-y-4" onSubmit={onSubmit}>
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-1">
               <label className="text-sm font-medium">Email</label>
               <Input
@@ -157,6 +165,7 @@ const UserLogin = ({ onClose }) => {
           </form>
         </TabsContent>
       </Tabs>
+      <LoadingOverlay isLoading={loading} />
     </div>
   );
 };
@@ -165,29 +174,31 @@ const UserLogin = ({ onClose }) => {
 
 
 const AdminLogin = () => {
-  const onSubmit = useLogin("admin");
+  const { handleLogin, loading } = useLogin("admin");
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-center">Admin Login</h2>
-      <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+      <form className="flex flex-col gap-4" onSubmit={handleLogin}>
         <Input type="text" name="adminId" placeholder="Admin ID" required />
         <Input type="password" name="password" placeholder="Password" required />
         <Button>Login</Button>
       </form>
+      <LoadingOverlay isLoading={loading} />
     </div>
   );
 };
 
 const SellerLogin = () => {
-  const onSubmit = useLogin("seller");
+  const { handleLogin, loading } = useLogin("seller");
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-center">Seller Login</h2>
-      <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+      <form className="flex flex-col gap-4" onSubmit={handleLogin}>
         <Input type="text" name="sellerId" placeholder="Seller ID" required />
         <Input type="password" name="password" placeholder="Password" required />
         <Button>Login</Button>
       </form>
+      <LoadingOverlay isLoading={loading||signupLoading} />
     </div>
   );
 };

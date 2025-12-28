@@ -15,12 +15,12 @@ const LoginAlertModal = ({ isOpen, onClose }) => {
 
   const handleLogin = () => {
     onClose();
-    navigate("/login/user", { state: { returnUrl: window.location.pathname } });
+    navigate("/login/user", { state: { returnUrl: window.location.pathname, data:"Login" } });
   };
 
   const handleSignup = () => {
     onClose();
-    navigate("/login"); // Assuming signup is part of login page
+    navigate("/login/user", { state: { returnUrl: window.location.pathname, data:"Signup" } }); // Assuming signup is part of login page
   };
 
   return (

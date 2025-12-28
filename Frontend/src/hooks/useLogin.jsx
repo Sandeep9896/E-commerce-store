@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch,useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { login } from "../slices/authSlice";
 import { useLocalStorage } from "./useLocalStorage";
 import api from "../api/api"; // adjust the import path as necessary
+import { set } from "lodash";
 
 function useLogin(role) {
   const dispatch = useDispatch();
@@ -16,12 +17,14 @@ function useLogin(role) {
   const location = useLocation();
   const returnUrl = location.state?.returnUrl || `/${role}/profile`;
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const [loading, setLoading] = useState(false);
  useEffect(() => {
         console.log(cartItems);
       }, [cartItems]);
-  return useCallback(
+  const handleLogin = useCallback(
     async (e, formData) => {
       e.preventDefault();
+      setLoading(true);
       const form = e.currentTarget;
       if (!formData) {
         var formData = new FormData(form);
@@ -43,14 +46,18 @@ function useLogin(role) {
         setStoredUser(data.user);
         setToken(data.accessToken);
         setIsLoggedInLocalStorage(true);
+        
         // Save to localStorage based on role
         console.log("isLoggedIn:", isLoggedIn, role, data);
         navigate(returnUrl); // ensure your route is lowercase
       } catch (err) {
         console.error("Login failed:", err);
+        setLoading(false);
       }
     },
     [dispatch, navigate, role, returnUrl]
   );
+
+  return { handleLogin, loading };
 }
 export default useLogin;
