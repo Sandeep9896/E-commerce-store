@@ -362,5 +362,18 @@ const orders = await Order.find({ user: req.user._id })
     }
 };
 
+const relatedProducts = async (req, res) => {
+    try {
+        const { category } = req.params;
+        console.log("Fetching related products for category:", category);
+        const products = await Product.find({ category }).limit(10);
+        res.status(200).json({ products });
+    }
+    catch (error) {
+        console.error("Fetch related products error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
 
-export default { register, getProfile, updateProfile, uploadAvatar, createOrder, addToCart, getCart, removeFromCart, clearCart, updateCart, searchProducts, mergeCart, addOrder, fetchOrders };
+
+export default { register, getProfile, updateProfile, uploadAvatar, createOrder, addToCart, getCart, removeFromCart, clearCart, updateCart, searchProducts, mergeCart, addOrder, fetchOrders, relatedProducts };

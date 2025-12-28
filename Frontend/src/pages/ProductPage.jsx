@@ -89,7 +89,7 @@ const ProductPage = () => {
   const handleSelectProduct = (product) => {
     console.log("Selected product:", product);
     // navigate to product details page if needed
-    navigate(`/products/${product._id}`, { state: { product } });
+    navigate(`/product/${product._id}`, { state: { product } });
   };
 
   return (

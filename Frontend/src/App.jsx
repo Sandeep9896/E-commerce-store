@@ -58,7 +58,6 @@ function App() {
           <Route path="/login/seller" element={<SellerLogin />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/product/:id" element={<Product />} />
-          <Route path="/products/:category" element={<Product />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/user/profile" element={<ProfilePage />} />
            <Route path="/user/checkout" element={<HandleCheckOut />} />

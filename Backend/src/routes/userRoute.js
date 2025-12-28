@@ -18,5 +18,7 @@ router.get("/search/:query",  userController.searchProducts);
 router.post("/cart-merge", userProtect, userController.mergeCart);
 router.post("/addOrder", userProtect, userController.addOrder);
 router.post('/fetch-orders', userProtect, userController.fetchOrders);
+// router.get('/order/:orderId', userProtect, userController.getOrderDetails);
+router.get('/related-products/:category', userProtect, userController.relatedProducts);
 
 export default router;

@@ -72,7 +72,7 @@ export default function ProductCarousel() {
 
     const handleSelectSuggestion = (product) => {
         console.log("Selected suggestion:", product);
-        navigate(`/products/${product._id}`, { state: { product } });
+        navigate(`/product/${product._id}`, { state: { product } });
         setSuggestions([]);
         setIsSearchFocused(false);
     }
@@ -80,7 +80,7 @@ export default function ProductCarousel() {
      const handleSelectProduct = (product) => {
     console.log("Selected product:", product);
     // navigate to product details page if needed
-    navigate(`/products/${product._id}`, { state: { product } });
+    navigate(`/product/${product._id}`, { state: { product } });
   };
     useEffect(() => {
         // Cleanup suggestions when search is cleared

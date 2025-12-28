@@ -9,24 +9,90 @@ import useAddToCart from "../hooks/useAddToCart";
 import HandleCheckOut from "../components/HandleCheckOut";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import LoginAlertModal from "../components/LoginAlertModal";
+import { useCallback } from "react";
 const Product = () => {
   const location = useLocation();
   const handleAddToCart = useAddToCart();
   const { id } = useParams();
   const user= useSelector((state) => state.auth.user);
   const [opencheckout, setOpenCheckout] = useState(false);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const [product, setProduct] = useState(location.state?.product);
+const [product, setProduct] = useState(null);
+  const [activeImage, setActiveImage] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const fetchRelatedProducts = useCallback(async (category, productId) => {
+  try {
+    const res = await api.get(`/users/related-products/${category}`);
+    setRelatedProducts(
+      res.data.products.filter((p) => p._id !== productId)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}, []);
+
+   
 
   useEffect(() => {
-    if (!product) {
-      api.get(`/products/${id}`).then(res => setProduct(res.data));
-    }
-  }, [id, product]);
+  const stateProduct = location.state?.product;
+  console.log("Location state product:", stateProduct, id);
 
-  const [activeImage, setActiveImage] = useState(product.images[0].url);
+  // 1️⃣ If product came from navigation state
+  if (stateProduct && stateProduct._id === id) {
+    setProduct(stateProduct);
+    setActiveImage(stateProduct.images?.[0]?.url);
+    return;
+  }
+
+  // 2️⃣ Otherwise fetch by ID
+  setLoading(true);
+  api
+    .get(`/products/${id}`)
+    .then((res) => {
+      setProduct(res.data);
+      setActiveImage(res.data.images?.[0]?.url);
+    })
+    .catch((err) => console.error("Error fetching product:", err))
+    .finally(() => setLoading(false));
+}, [id, location.state]);
+
+
+  useEffect(() => {
+  if (product?.category) {
+    fetchRelatedProducts(product.category, product._id);
+  }
+}, [product, fetchRelatedProducts]);
+
   const handleBuy = () => {
+    if(!user){
+      console.log("User not logged in, showing login modal");
+      setShowLoginAlert(true);
+    }
+    else{
+      navigate("/user/checkout", { state: { product } });
+    }
+  }
+
+  const handleSelectProduct = (product) => {
+    console.log("Selected product:", product);
+    // navigate to product details page if needed
+    navigate(`/product/${product._id}`, { state: { product } });
+  };
+
+  if (loading || !product) {
+    return (
+      <div className="bg-background text-foreground min-h-screen px-6 py-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+      </div>
+    );
   }
 
 
@@ -34,6 +100,7 @@ const Product = () => {
 
   return (
     <div className="bg-background text-foreground min-h-screen px-6 py-10">
+      <LoginAlertModal isOpen={showLoginAlert} onClose={() => setShowLoginAlert(false)} />
       {/* Product Section */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Left: Product Images */}
@@ -53,7 +120,7 @@ const Product = () => {
                 src={img.url}
                 alt={`Thumbnail ${i + 1}`}
                 onClick={() => setActiveImage(img.url)}
-                className={`w-20 h-20 object-cover rounded-md cursor-pointer border-2 ${activeImage === img ? "border-primary" : "border-transparent"
+                className={`w-20 h-20 object-cover rounded-md cursor-pointer border-2 ${activeImage === img.url ? "border-primary" : "border-transparent"
                   }`}
               />
             ))}
@@ -89,7 +156,7 @@ const Product = () => {
             <Button className="bg-primary text-foreground hover:bg-secondary flex-1" onClick={(e) => handleAddToCart(e, product)}>
               Add to Cart
             </Button>
-            <Button onClick={() => navigate("/user/checkout", { state: { product } })} className="bg-accent text-background hover:bg-primary flex-1">
+            <Button onClick={handleBuy} className="bg-accent text-background hover:bg-primary flex-1">
               Buy Now
             </Button>
           </div>
@@ -97,7 +164,7 @@ const Product = () => {
       </div>
 
       {/* Related Products */}
-      {/* <div className="mt-16 max-w-6xl mx-auto">
+      <div className="mt-16 max-w-6xl mx-auto">
         <h2 className="text-2xl font-semibold mb-6 text-center">
           Related Products
         </h2>
@@ -105,31 +172,31 @@ const Product = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {relatedProducts.map((item) => (
             <Card
-              key={item.name}
+              key={item._id}
               className="bg-accent/90 hover:bg-accent transition rounded-lg shadow-sm hover:shadow-md overflow-hidden group"
             >
               <div className="relative">
                 <img
-                  src={item.image}
-                  alt={item.name}
+                  src={item.images[0].url}
+                  alt={item.productName}
                   className="w-full h-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Button className="bg-primary text-foreground hover:bg-secondary px-3 py-2 rounded-md">
+                  <Button onClick={() => handleSelectProduct(item)} className="bg-primary text-foreground hover:bg-secondary px-3 py-2 rounded-md">
                     View
                   </Button>
                 </div>
               </div>
               <div className="p-3">
                 <h3 className="text-background text-sm font-semibold truncate">
-                  {item.name}
+                  {item.productName}
                 </h3>
                 <p className="text-background/80 text-sm">${item.price}</p>
               </div>
             </Card>
           ))}
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };
