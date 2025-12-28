@@ -41,6 +41,7 @@ const UserLogin = ({ onClose }) => {
         password
       });
       const data = response.data;
+      if(data){
       console.log("Signup successful:", data);
       dispatch(login(data));
       setStoredUser(data.user);
@@ -48,6 +49,7 @@ const UserLogin = ({ onClose }) => {
       setIsLoggedInLocalStorage(true);
       setSignupLoading(false);
       navigate("/user/profile");
+      }
       // Optionally, you can auto-login the user after signup
       // onSubmit(e,formData); // Call login after successful signup
     } catch (error) {

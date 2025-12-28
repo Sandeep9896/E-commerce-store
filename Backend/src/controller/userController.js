@@ -274,6 +274,7 @@ const mergeCart = async (req, res) => {
 
 const addOrder = async (req, res) => {
   try {
+    const { product } = req.body;
     const user = await User.findById(req.user._id).populate("cart.product");
 
     console.log(user.cart);
@@ -281,10 +282,32 @@ const addOrder = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    if (product) {
+      // If a single product is provided, create an order for that product only
+      const newOrder = new Order({
+        user: user._id,
+        products: [{
+          product: product._id, 
+            name: product.productName,
+            price: product.price,
+            quantity: 1,
+        }],
+        totalAmount: product.price,
+        shippingAddress: { ...user.address }, // safe copy
+        paymentMethod: "Razorpay",
+        paymentStatus: "Completed",
+      });
+        await newOrder.save();
+        user.orders.push(newOrder._id);
+        await user.save();
 
-    if (user.cart.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
+        return res.status(201).json({   
+            message: "Order placed successfully",
+            orderId: newOrder._id
+        });
     }
+
+    // If no single product, create order for all cart items
 
     const newOrder = new Order({
       user: user._id,

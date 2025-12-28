@@ -6,10 +6,16 @@ import { useLocation, useParams } from "react-router-dom";
 import api from "../api/api";
 import { useEffect } from "react";
 import useAddToCart from "../hooks/useAddToCart";
+import HandleCheckOut from "../components/HandleCheckOut";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 const Product = () => {
   const location = useLocation();
   const handleAddToCart = useAddToCart();
   const { id } = useParams();
+  const user= useSelector((state) => state.auth.user);
+  const [opencheckout, setOpenCheckout] = useState(false);
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(location.state?.product);
 
@@ -20,6 +26,8 @@ const Product = () => {
   }, [id, product]);
 
   const [activeImage, setActiveImage] = useState(product.images[0].url);
+  const handleBuy = () => {
+  }
 
 
 
@@ -81,7 +89,7 @@ const Product = () => {
             <Button className="bg-primary text-foreground hover:bg-secondary flex-1" onClick={(e) => handleAddToCart(e, product)}>
               Add to Cart
             </Button>
-            <Button className="bg-accent text-background hover:bg-primary flex-1">
+            <Button onClick={() => navigate("/user/checkout", { state: { product } })} className="bg-accent text-background hover:bg-primary flex-1">
               Buy Now
             </Button>
           </div>

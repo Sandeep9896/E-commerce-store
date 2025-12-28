@@ -3,6 +3,7 @@ import api from "../api/api";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAddToCart from "../hooks/useAddToCart";
 import {
   Select,
@@ -16,6 +17,7 @@ const ITEMS_PER_PAGE = 8;
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -84,6 +86,12 @@ const ProductPage = () => {
       : products.filter((product) => product.category === selectedCategory)
   ), [products, selectedCategory]);
 
+  const handleSelectProduct = (product) => {
+    console.log("Selected product:", product);
+    // navigate to product details page if needed
+    navigate(`/products/${product._id}`, { state: { product } });
+  };
+
   return (
     <div className="min-h-screen container mx-auto bg-background px-4 py-8 text-foreground">
       {/* Category Filter Dropdown */}
@@ -109,8 +117,10 @@ const ProductPage = () => {
             <Card
               key={product._id}
               className="relative group overflow-hidden bg-accent rounded-lg border border-secondary shadow hover:shadow-lg transition-all"
-              onClick={() =>
-                setActive(active === product._id ? null : product._id)
+              onClick={() =>{
+                setActive(active === product._id ? null : product._id);
+                handleSelectProduct(product);
+              }
               }
             >
               <div className="relative">
@@ -140,7 +150,7 @@ const ProductPage = () => {
                   {product.productName}
                 </h3>
                 <p className="text-sm sm:text-base font-medium text-background">
-                  Price: ${product.price}
+                  Price: {product.price}
                 </p>
               </div>
             </Card>

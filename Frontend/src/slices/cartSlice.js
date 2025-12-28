@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { set } from "lodash";
 const initialState = {
     cartItems: [],
     totalQuantity: 0,
@@ -65,7 +64,19 @@ const cartSlice = createSlice({
         },
         setCartItems: (state, action) => {
             state.cartItems = action.payload;
-        }
+
+            let totalQty = 0;
+            let totalAmt = 0;
+
+            action.payload.forEach((item) => {
+            totalQty += item.quantity;
+            totalAmt += item.price * item.quantity;
+        });
+
+        state.totalQuantity = totalQty;
+        state.totalAmount = totalAmt;
+}
+
     },
 });
 

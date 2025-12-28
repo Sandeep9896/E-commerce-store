@@ -11,7 +11,6 @@ import HandleCheckOut from "../components/HandleCheckOut";
 import { setCartItems } from '../slices/cartSlice'
 import LoginAlertModal from "../components/LoginAlertModal";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { OrderSuccessfulModal } from "../components/OrderSuccesFulModal";
 import { clearCart } from "../slices/cartSlice";
 
 const CartPage = () => {
@@ -24,8 +23,7 @@ const CartPage = () => {
   const user = useSelector((state) => state.auth.user);
   const [address, setAddress] = useState(user?.address || "");
   let [cart, setCart] = useLocalStorage("cart", []);
-  const [orderSuccess, setOrderSuccess] = useState(false);
-  const [orderId, setOrderId] = useState(null);
+  
   useEffect(() => {
     setAddress(user?.address || "");
   }, [user]);
@@ -151,7 +149,7 @@ const CartPage = () => {
   const handleValidate = () => {
     console.log("Validating checkout details...");
     if (isloggedIn) {
-      setOpen(true);
+      navigate("/user/checkout");
     }
     else {
       setShowLoginAlert(true);
@@ -160,23 +158,9 @@ const CartPage = () => {
   }
 
   // Proceed to payment handler and it call from address confirm modal, it will call razorpay payment gateway
-  const handleProceed = () => {
-    setOpen(false);
-
-    handleRazorpayPayment(subtotal + 50, handlePaymentSuccess, user);
-    console.log("Proceeding to payment...");
-  };
+  
   // callback function after payment successfull
-  const handlePaymentSuccess = (orderId) => {
-    setOrderSuccess(true);
-    setOrderId(orderId);
-
-    api.post('/users/addOrder');
-    // You can also clear the cart here if needed
-    dispatch(clearCart());
-    localStorage.removeItem("cart");
-    
-  }
+ 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
@@ -185,15 +169,7 @@ const CartPage = () => {
     );
   }
 
-  if (orderSuccess) {
-    return <OrderSuccessfulModal
-      isOpen={orderSuccess}
-      onClose={() => {setOrderSuccess(false); navigate("/")}}
-      orderId={orderId}
-    />
-      ;
-
-  }
+ 
 
   if (cartItems.length === 0) {
     return (

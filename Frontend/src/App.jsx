@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux'
 import api from './api/api'
 import { useEffect } from 'react'
 import { login } from './slices/authSlice'
+import HandleCheckOut from './components/HandleCheckOut'
 
 function App() {
   const dispatch = useDispatch();
@@ -60,6 +61,7 @@ function App() {
           <Route path="/products/:category" element={<Product />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/user/profile" element={<ProfilePage />} />
+           <Route path="/user/checkout" element={<HandleCheckOut />} />
         </Route>
 
         <Route path="/seller" element={<SellerLayout />}>

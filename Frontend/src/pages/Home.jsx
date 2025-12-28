@@ -76,6 +76,12 @@ export default function ProductCarousel() {
         setSuggestions([]);
         setIsSearchFocused(false);
     }
+
+     const handleSelectProduct = (product) => {
+    console.log("Selected product:", product);
+    // navigate to product details page if needed
+    navigate(`/products/${product._id}`, { state: { product } });
+  };
     useEffect(() => {
         // Cleanup suggestions when search is cleared
         if (!isSearchFocused) {
@@ -165,7 +171,7 @@ export default function ProductCarousel() {
                         <div
                             key={product._id}
                             className="relative bg-accent rounded-lg border border-secondary shadow hover:shadow-lg transition-shadow flex flex-col group overflow-hidden"
-                            onClick={() => setActive(active === product.productName ? null : product.productName)}
+                            onClick={() => (setActive(active === product.productName ? null : product.productName), handleSelectProduct(product))}
                         >
                             <div className="relative">
                                 <img
