@@ -9,7 +9,7 @@ const uploadProduct = async (req, res) => {
         const key = "products:version";
         const exists = await redisClient.exists(key);
 
-        
+
 
 
         if (!req.files || req.files.length === 0) {
@@ -42,12 +42,12 @@ const uploadProduct = async (req, res) => {
 
         // Invalidate cache
         await redisClient.del('featured_products');
-        
+
         if (!exists) {
-             await redisClient.set(key, 2, { EX: 3600 }); // Set initial version to 2 because default version key  is 1 and set with 1 hour expiry
+            await redisClient.set(key, 2, { EX: 3600 }); // Set initial version to 2 because default version key  is 1 and set with 1 hour expiry
         } else {
             await redisClient.incr(key);
-        }        return res.status(200).json({ message: "Product uploaded successfully", product });
+        } return res.status(200).json({ message: "Product uploaded successfully", product });
 
     } catch (error) {
         console.error("Product upload error:", error);
@@ -59,9 +59,20 @@ const productPagination = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const version = await redisClient.get("products:version") || 1;
+        const categoryFilter = req.query.category ;
 
-        const cacheKey = `products:v${version}:page:${page}:limit:${limit}`;
+        const version = await redisClient.get("products:version") || 1;
+        console.log("Current products version:", categoryFilter,req.query);
+        let query = {};
+        if (categoryFilter) {
+            query.category = categoryFilter;
+        }
+        else {
+            console.log("No category filter applied");
+            query={};
+        }
+
+        const cacheKey = `products:v${version}:page:${page}:limit:${limit}:category:${categoryFilter || "allProducts"}`;
         // Check cache first
         const cachedProducts = await redisClient.get(cacheKey);
         if (cachedProducts) {
@@ -69,7 +80,7 @@ const productPagination = async (req, res) => {
             return res.json(JSON.parse(cachedProducts));
         }
 
-        const allProducts = await Product.find().populate('seller', 'name');
+        const allProducts = await Product.find(query).populate('seller', 'name');
         const start = (page - 1) * limit;
         const end = start + limit;
         const products = allProducts.slice(start, end);
@@ -121,7 +132,7 @@ const getProductById = async (req, res) => {
 
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
-        }   
+        }
         return res.status(200).json({ product });
     } catch (error) {
         console.error("Error fetching product by ID:", error);

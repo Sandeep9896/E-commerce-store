@@ -24,22 +24,19 @@ const ProductPage = () => {
   const [loadMore, setLoadMore] = useState(true);
   const [active, setActive] = useState(null);
   const location = useLocation();
-  const { category } = location.state || { category: "all" };
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const { category } = location.state || { category: "allProducts" };
+  const [selectedCategory, setSelectedCategory] = useState(category || "allProducts");
   const addToCart = useAddToCart();
-
-  useEffect(() => {
-    if (category && category !== "all") {
-      setSelectedCategory(category);
-    }
-  }, [category]);
 
   // 🔹 Fetch Products
   const fetchProducts = async (pageNum = 1, append = false) => {
+    console.log("Fetching products for page:", pageNum, "Category:", selectedCategory);
     try {
       setLoading(true);
       const res = await api.get(
-        `/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}`
+        `/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&category=${
+          selectedCategory === "allProducts" ? "" : selectedCategory
+        }`
       );
 
       const newProducts = res.data.products;
@@ -58,7 +55,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     fetchProducts(1, false);
-  }, []);
+  }, [selectedCategory]);
 
   // 🔹 Load More Pagination
   const handleLoadMore = () => {
@@ -80,11 +77,11 @@ const ProductPage = () => {
   // };
 
   // 🔹 Category Filter Logic
-  const filteredProducts = useMemo(() => (
-    selectedCategory === "all"
-      ? products
-      : products.filter((product) => product.category === selectedCategory)
-  ), [products, selectedCategory]);
+  // const filteredProducts = useMemo(() => (
+  //   selectedCategory === "allProducts"
+  //     ? products
+  //     : products.filter((product) => product.category === selectedCategory)
+  // ), [products, selectedCategory]);
 
   const handleSelectProduct = (product) => {
     console.log("Selected product:", product);
@@ -101,7 +98,7 @@ const ProductPage = () => {
             <SelectValue placeholder="Filter by Category" />
           </SelectTrigger>
           <SelectContent className=" bg-background" >
-            <SelectItem value="all">All Products</SelectItem>
+            <SelectItem value="allProducts">All Products</SelectItem>
             <SelectItem value="Electronics">Electronics</SelectItem>
             <SelectItem value="Clothing">Clothing</SelectItem>
             <SelectItem value="Furniture">Furniture</SelectItem>
@@ -113,7 +110,7 @@ const ProductPage = () => {
       <div className="max-w-6xl mx-auto">
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <Card
               key={product._id}
               className="relative group overflow-hidden bg-accent rounded-lg border border-secondary shadow hover:shadow-lg transition-all"
