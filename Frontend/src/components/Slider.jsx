@@ -15,7 +15,7 @@ const Slider = ({ products }) => {
                 <CarouselContent>
                     {products && products.map((product) => (
                         <CarouselItem className="flex justify-center" key={product._id}>
-                            <img src={`/images/${product.image}`} alt={product.name} className="w-full h-50 md:h-120 object-cover" />
+                            <img src={product.image} alt={product.name} className="w-full h-50 md:h-120 object-cover" />
                         </CarouselItem>
                     ))}
                 </CarouselContent>

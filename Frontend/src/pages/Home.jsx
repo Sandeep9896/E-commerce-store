@@ -17,17 +17,17 @@ export default function ProductCarousel() {
     const [suggestions, setSuggestions] = useState([]);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const categories = [
-        { name: "Electronics Products", image: "/images/pb1.jpg", category: "Electronics" },
-        { name: "Fashion Products", image: "/images/pb2.jpg", category: "Clothing" },
-        { name: "Home Products", image: "/images/pb3.jpg", category: "Furniture" },
-        { name: "Sports Products", image: "/images/pb4.jpg", category: "Sports" },
+        { name: "Electronics Products", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767025202/pb1_qw9bw2.jpg", category: "Electronics" },
+        { name: "Fashion Products", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767025233/pb2_ujnesm.jpg", category: "Clothing" },
+        { name: "Home Products", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767025233/pb3_m9rwq4.jpg", category: "Furniture" },
+        { name: "Sports Products", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767025234/pb4_qutisy.jpg", category: "Sports" },
     ];
     const [Products, setProducts] = useState([]);
 
     const SlideProduct = [
-        { id: 1, name: "Smart Watch", image: "p1.jpg", price: 5000 },
-        { id: 2, name: "Headphones", image: "p2.jpg", price: 3000 },
-        { id: 3, name: "Camera", image: "p3.jpg", price: 25000 },
+        { id: 1, name: "Smart Watch", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767024875/p1_kv7y3q.jpg", price: 5000 },
+        { id: 2, name: "Headphones", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767024876/p2_zqtfpc.jpg", price: 3000 },
+        { id: 3, name: "Camera", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767024877/p3_zhyz87.jpg", price: 25000 },
     ]
     const [active, setActive] = useState(null);
 
