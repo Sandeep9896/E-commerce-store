@@ -10,6 +10,8 @@ import { setUser, login } from "../slices/authSlice";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import api from "../api/api";
 import LoginAlertModal from "../components/LoginAlertModal";
+import { ExternalLink } from "lucide-react";
+
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -31,7 +33,9 @@ const ProfilePage = () => {
   useEffect(() => {
     isLoggedIn && (async () => {
       try {
-        const { data } = await api.post('/users/fetch-orders');
+        const { data } = await api.post('/users/fetch-orders', {
+          allOrders: false
+        });
         console.log("Fetched orders:", data);
         setOrders(data.orders || []);
       } catch (err) {
@@ -333,7 +337,8 @@ const ProfilePage = () => {
       {/* Order History Section */}
       <div className="mt-10">
         <h2 className="text-2xl font-semibold text-foreground mb-4">
-          Recent Orders
+          Recent Orders <button className=" mt-5 hover:text-primary " onClick={()=> navigate("/user/recent-orders")} ><ExternalLink className="w-6 h-5" />
+          </button>
         </h2>
         <div className="bg-accent/50 rounded-lg p-4 shadow-md text-sm sm:text-base">
           {/* <p className="text-foreground/70">You have no recent orders.</p> */}

@@ -1,15 +1,15 @@
 import User from "../models/userModel.js";
 import Order from "../models/ordersModel.js";
 import deleteImageFromCloudinary from "../utils/deleteImageCloudinary.js";
-import generateToken  from "../utils/generateToken.js";
+import generateToken from "../utils/generateToken.js";
 import { encryptPassword } from "../utils/hashPassword.js";
 import Razorpay from "razorpay";
 import Product from "../models/productModel.js";
 import redisClient from "../config/redis.js";
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 const options = {
@@ -47,7 +47,7 @@ const register = async (req, res) => {
 const getProfile = async (req, res) => {
     try {
         const cacheKey = `user_profile_${req.user._id}`;
-        
+
         // Check cache first
         const cachedProfile = await redisClient.get(cacheKey);
         if (cachedProfile) {
@@ -77,14 +77,14 @@ const updateProfile = async (req, res) => {
             phone: formData.phone,
             address: formData.address
         };
-        
+
         // Find and update in one step
         const user = await User.findByIdAndUpdate(
-            req.user._id, 
-            updateProfileData, 
+            req.user._id,
+            updateProfileData,
             { new: true, runValidators: true }
         );
-        
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -94,14 +94,14 @@ const updateProfile = async (req, res) => {
         await redisClient.del(cacheKey);
 
         // Send response after successful update
-        return res.status(200).json({ 
+        return res.status(200).json({
             success: true,
-            message: "Profile updated successfully", 
-            user 
+            message: "Profile updated successfully",
+            user
         });
     } catch (error) {
         console.error("Profile update error:", error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
             message: "Failed to update profile",
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -109,42 +109,42 @@ const updateProfile = async (req, res) => {
     }
 };
 
-const uploadAvatar = async(req, res) => {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-        try {
+const uploadAvatar = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+    try {
 
-            const imageData = {
-                url: req.file.path,
-                public_id: req.file.filename
-            };
-    
-            const user = await User.findById(req.user._id);
-            deleteImageFromCloudinary(user.avatar?.public_id);
-            user.avatar = imageData;
-            await user.save();
+        const imageData = {
+            url: req.file.path,
+            public_id: req.file.filename
+        };
 
-            res.status(200).json({ message: "Avatar uploaded successfully", url: req.file.path });
-        }
-        catch (error) {
-            res.status(500).json({ message: "Server error", error: error.message });
-            throw new Error("Server error", { cause: error });
-        }
+        const user = await User.findById(req.user._id);
+        deleteImageFromCloudinary(user.avatar?.public_id);
+        user.avatar = imageData;
+        await user.save();
+
+        res.status(200).json({ message: "Avatar uploaded successfully", url: req.file.path });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+        throw new Error("Server error", { cause: error });
+    }
 };
 const createOrder = async (req, res) => {
-  const options = {
-    amount: req.body.amount * 100, // amount in paise
-    currency: "INR",
-    receipt: "order_rcpt_11"
-  };
+    const options = {
+        amount: req.body.amount * 100, // amount in paise
+        currency: "INR",
+        receipt: "order_rcpt_11"
+    };
 
-  try {
-    const order = await razorpay.orders.create(options);
-    res.send(order);
-  } catch (err) {
-    res.status(500).send({ error: err });
-  }
+    try {
+        const order = await razorpay.orders.create(options);
+        res.send(order);
+    } catch (err) {
+        res.status(500).send({ error: err });
+    }
 };
 
 const addToCart = async (req, res) => {
@@ -217,7 +217,7 @@ const updateCart = async (req, res) => {
     try {
         const { productId, quantity } = req.body;
         console.log("Update cart request for product:", productId, "to quantity:", quantity);
-        const user = await User.findById(req.user._id); 
+        const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -236,7 +236,7 @@ const updateCart = async (req, res) => {
 
 const searchProducts = async (req, res) => {
     try {
-        const {  query } = req.params;
+        const { query } = req.params;
         console.log("Searching products with query:", query, req.params, req.query);
         if (!query) {
             return res.status(400).json({ message: "Query parameter 'query' is required" });
@@ -273,85 +273,101 @@ const mergeCart = async (req, res) => {
 };
 
 const addOrder = async (req, res) => {
-  try {
-    const { product } = req.body;
-    const user = await User.findById(req.user._id).populate("cart.product");
+    try {
+        const { product } = req.body;
+        const user = await User.findById(req.user._id).populate("cart.product");
 
-    console.log(user.cart);
+        console.log(user.cart);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (product) {
-      // If a single product is provided, create an order for that product only
-      const newOrder = new Order({
-        user: user._id,
-        products: [{
-          product: product._id, 
-            name: product.productName,
-            price: product.price,
-            quantity: 1,
-        }],
-        totalAmount: product.price,
-        shippingAddress: { ...user.address }, // safe copy
-        paymentMethod: "Razorpay",
-        paymentStatus: "Completed",
-      });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (product) {
+            // If a single product is provided, create an order for that product only
+            const newOrder = new Order({
+                user: user._id,
+                products: [{
+                    product: product._id,
+                    name: product.productName,
+                    price: product.price,
+                    quantity: 1,
+                }],
+                totalAmount: product.price,
+                shippingAddress: { ...user.address }, // safe copy
+                paymentMethod: "Razorpay",
+                paymentStatus: "Completed",
+            });
+            await newOrder.save();
+            user.orders.push(newOrder._id);
+            await user.save();
+
+            return res.status(201).json({
+                message: "Order placed successfully",
+                orderId: newOrder._id
+            });
+        }
+
+        // If no single product, create order for all cart items
+
+        const newOrder = new Order({
+            user: user._id,
+            products: user.cart.map(item => ({
+                product: item.product._id,
+                name: item.product.productName,
+                price: item.product.price,
+                quantity: item.quantity,
+            })),
+            totalAmount: user.cart.reduce(
+                (total, item) => total + item.product.price * item.quantity,
+                0
+            ),
+            shippingAddress: { ...user.address }, // safe copy
+            paymentMethod: "Razorpay",
+            paymentStatus: "Completed",
+        });
+
         await newOrder.save();
+
         user.orders.push(newOrder._id);
+        user.cart = [];
         await user.save();
 
-        return res.status(201).json({   
+        res.status(201).json({
             message: "Order placed successfully",
             orderId: newOrder._id
         });
+
+    } catch (error) {
+        console.error("Add order error:", error);
+        res.status(500).json({
+            message: "Server error",
+            error: error.message
+        });
     }
-
-    // If no single product, create order for all cart items
-
-    const newOrder = new Order({
-      user: user._id,
-      products: user.cart.map(item => ({
-        product: item.product._id,
-        name: item.product.productName,
-        price: item.product.price,
-        quantity: item.quantity,
-      })),
-      totalAmount: user.cart.reduce(
-        (total, item) => total + item.product.price * item.quantity,
-        0
-      ),
-      shippingAddress: { ...user.address }, // safe copy
-      paymentMethod: "Razorpay",
-      paymentStatus: "Completed",
-    });
-
-    await newOrder.save();
-
-    user.orders.push(newOrder._id);
-    user.cart = [];
-    await user.save();
-
-    res.status(201).json({
-      message: "Order placed successfully",
-      orderId: newOrder._id
-    });
-
-  } catch (error) {
-    console.error("Add order error:", error);
-    res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
-  }
 };
 
 const fetchOrders = async (req, res) => {
+    const { allOrders } = req.body;
+    // fetch all orders for user if allOrders is true
+    if (allOrders) {
+        try {
+            const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }).populate('products.product');
+            console.log("Fetched all orders:", orders);
+            if (!orders) {
+                return res.status(404).json({ message: "User not have any orders" });
+            }
+            return res.status(200).json({ orders: orders });
+        } catch (error) {
+            console.error("Fetch all orders error:", error);
+            return res.status(500).json({ message: "Server error", error: error.message });
+        }
+    }
+    // else fetch last 2 orders
     try {
-const orders = await Order.find({ user: req.user._id })
-  .sort({ createdAt: -1 })
-  .limit(2);
-  console.log("Fetched orders:", orders);
+        const orders = await Order.find({ user: req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(2);
+        console.log("Fetched orders:", orders);
         if (!orders) {
             return res.status(404).json({ message: "User not have any orders" });
         }

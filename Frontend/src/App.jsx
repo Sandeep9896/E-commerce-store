@@ -18,6 +18,7 @@ import api from './api/api'
 import { useEffect } from 'react'
 import { login } from './slices/authSlice'
 import HandleCheckOut from './components/HandleCheckOut'
+import RecentOrderPage from './pages/RecentOrderPage'
 
 function App() {
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/user/profile" element={<ProfilePage />} />
            <Route path="/user/checkout" element={<HandleCheckOut />} />
+           <Route path="/user/recent-orders" element={<RecentOrderPage />} />
         </Route>
 
         <Route path="/seller" element={<SellerLayout />}>
