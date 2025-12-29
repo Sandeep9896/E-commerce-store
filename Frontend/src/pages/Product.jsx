@@ -174,6 +174,7 @@ const [product, setProduct] = useState(null);
             <Card
               key={item._id}
               className="bg-accent/90 hover:bg-accent transition rounded-lg shadow-sm hover:shadow-md overflow-hidden group"
+              onClick={() => handleSelectProduct(item)}
             >
               <div className="relative">
                 <img
@@ -182,8 +183,8 @@ const [product, setProduct] = useState(null);
                   className="w-full h-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Button onClick={() => handleSelectProduct(item)} className="bg-primary text-foreground hover:bg-secondary px-3 py-2 rounded-md">
-                    View
+                  <Button onClick={(e) => handleAddToCart(e, item)} className="bg-primary text-foreground hover:bg-secondary px-3 py-2 rounded-md">
+                    Add To Cart
                   </Button>
                 </div>
               </div>
