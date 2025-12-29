@@ -6,6 +6,11 @@ const uploadProduct = async (req, res) => {
     try {
         const formData = req.body;
         const seller = req.seller._id;
+        const key = "products:version";
+        const exists = await redisClient.exists(key);
+
+        
+
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "No file uploaded" });
@@ -37,9 +42,12 @@ const uploadProduct = async (req, res) => {
 
         // Invalidate cache
         await redisClient.del('featured_products');
-        await redisClient.del('all_products');
-
-        return res.status(200).json({ message: "Product uploaded successfully", product });
+        
+        if (!exists) {
+             await redisClient.set(key, 2, { EX: 3600 }); // Set initial version to 2 because default version key  is 1 and set with 1 hour expiry
+        } else {
+            await redisClient.incr(key);
+        }        return res.status(200).json({ message: "Product uploaded successfully", product });
 
     } catch (error) {
         console.error("Product upload error:", error);
@@ -51,8 +59,9 @@ const productPagination = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const cacheKey = `products_page_${page}_limit_${limit}`;
+        const version = await redisClient.get("products:version") || 1;
 
+        const cacheKey = `products:v${version}:page:${page}:limit:${limit}`;
         // Check cache first
         const cachedProducts = await redisClient.get(cacheKey);
         if (cachedProducts) {
