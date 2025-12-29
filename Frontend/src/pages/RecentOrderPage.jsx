@@ -1,6 +1,9 @@
 import React, { use, useEffect } from "react";
 import { Card } from "../components/ui/card";
 import api from "../api/api";
+import { Check } from "lucide-react";
+
+
 
 const RecentOrderPage = () => {
     const [selectedOrder, setSelectedOrder] = React.useState(null);
@@ -37,7 +40,10 @@ const RecentOrderPage = () => {
                             <div className="text-right">
                                 <p className="text-lg font-semibold">Total: ${order.totalAmount.toFixed(2)}</p>
                             </div>
+                            {selectedOrder && selectedOrder._id === order._id ?
+                            <p><Check className="w-4 h-4 text-primary ml-10 mt-2 bg-green-500 rounded-full" /></p> : null}
                         </div>
+                        
                     </div>
                 ))}
             </div>
