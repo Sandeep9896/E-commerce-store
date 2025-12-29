@@ -85,6 +85,21 @@ const HandleCheckOut = ({
   };
 
   const handleAddress = async () => {
+    // Check if data actually changed
+    const hasChanged = 
+      form.name !== storedUser?.name ||
+      form.phone !== storedUser?.phone ||
+      form.address?.street !== storedUser?.address?.street ||
+      form.address?.city !== storedUser?.address?.city ||
+      form.address?.state !== storedUser?.address?.state ||
+      form.address?.pincode !== storedUser?.address?.pincode;
+
+    if (!hasChanged) {
+      console.log("No changes detected, skipping API call");
+      setOnChangeAddressState(false);
+      return;
+    }
+
     console.log("Profile updated:", form);
     try {
       const { data } = await api.put('/users/update-profile', form);
