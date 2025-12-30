@@ -256,15 +256,28 @@ const mergeCart = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        
+        console.log("Merging cart. Current cart:", user.cart);
+        console.log("Items to merge:", cartItems);
+        
         for (const newItem of cartItems) {
-            const existingItemIndex = user.cart.findIndex(item => item?.product?.toString() === newItem._id);
+            // Convert both to string for comparison to handle ObjectId types
+            const existingItemIndex = user.cart.findIndex(item => {
+                const productId = item?.product?._id ? item.product._id.toString() : item?.product?.toString();
+                return productId === newItem._id;
+            });
+            
             if (existingItemIndex >= 0) {
+                console.log(`Updating quantity for product ${newItem._id}: ${user.cart[existingItemIndex].quantity} + ${newItem.quantity}`);
                 user.cart[existingItemIndex].quantity += newItem.quantity;
             } else {
+                console.log(`Adding new product ${newItem._id} with quantity ${newItem.quantity}`);
                 user.cart.push({ product: newItem._id, quantity: newItem.quantity });
             }
         }
+        
         await user.save();
+        console.log("Cart after merge:", user.cart);
         res.status(200).json({ message: "Cart merged successfully", cart: user.cart });
     } catch (error) {
         console.error("Merge cart error:", error);

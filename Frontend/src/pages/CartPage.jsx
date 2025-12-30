@@ -23,66 +23,81 @@ const CartPage = () => {
   const user = useSelector((state) => state.auth.user);
   const [address, setAddress] = useState(user?.address || "");
   let [cart, setCart] = useLocalStorage("cart", []);
+  const hasMergedRef = React.useRef(false);
   
   useEffect(() => {
     setAddress(user?.address || "");
   }, [user]);
 
   useEffect(() => {
-    const mergeCart = async () => {
-      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const initializeCart = async () => {
+      if (isLoggedIn) {
+        // User is logged in
+        const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+        
+        // Only merge if we have local items AND haven't merged yet
+        if (localCart.length > 0 && !hasMergedRef.current) {
+          console.log("Merging guest cart with server cart...");
+          hasMergedRef.current = true;
+          
+          try {
+            // Format local cart items to match backend expectations
+            const formattedCart = localCart.map(item => ({
+              _id: item._id,
+              quantity: item.quantity
+            }));
 
-      if (isLoggedIn && localCart.length > 0) {
-        try {
-          await api.post("/users/cart-merge", {
-            cartItems: localCart
-          });
+            await api.post("/users/cart-merge", {
+              cartItems: formattedCart
+            });
 
-          // ✅ IMPORTANT: clear localStorage after merge
-          localStorage.removeItem("cart");
-        } catch (error) {
-          console.error("Cart merge failed:", error);
+            // ✅ Clear localStorage immediately after successful merge
+            localStorage.removeItem("cart");
+            console.log("Cart merged and localStorage cleared");
+          } catch (error) {
+            console.error("Cart merge failed:", error);
+            hasMergedRef.current = false; // Allow retry on error
+          }
         }
-      }
-    };
+        
+        // Fetch cart from server (whether we merged or not)
+        try {
+          const response = await api.get("/users/cart");
+          const serverCart = response.data?.cart || [];
 
-    const fetchServerCart = async () => {
-      try {
-        const response = await api.get("/users/cart");
-        const cart = response.data?.cart || [];
+          const normalizedItems = serverCart.map(item => ({
+            _id: item.product._id,
+            productName: item.product.productName,
+            price: item.product.price,
+            image: item.product.images?.[0]?.url,
+            quantity: item.quantity
+          }));
 
-        const normalizedItems = cart.map(item => ({
-          _id: item.product._id,
-          productName: item.product.productName,
-          price: item.product.price,
-          image: item.product.images?.[0]?.url,
-          quantity: item.quantity
-        }));
-
-        dispatch(setCartItems(normalizedItems));
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-      } finally {
+          dispatch(setCartItems(normalizedItems));
+        } catch (error) {
+          console.error("Error fetching cart:", error);
+          dispatch(setCartItems([]));
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Guest user → load only localStorage cart
+        const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+        dispatch(setCartItems(localCart));
         setLoading(false);
+        // Reset merge flag when logged out
+        hasMergedRef.current = false;
       }
     };
 
-    if (isLoggedIn) {
-      mergeCart().then(fetchServerCart);
-    } else {
-      // guest user → load only localStorage cart
-      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
-      dispatch(setCartItems(localCart));
-      setLoading(false);
-    }
-
+    initializeCart();
   }, [isLoggedIn, dispatch]);
 
 
   const handleQuantityChange = async (item) => {
     dispatch(addToCart(item));
 
-    // Keep localStorage in sync for guests
+    // Keep localStorage in sync for guests only
     if (!isLoggedIn) {
       const updatedCart = cart.map((cartItem) =>
         cartItem._id === item._id
@@ -90,22 +105,24 @@ const CartPage = () => {
           : cartItem
       );
       setCart(updatedCart);
+      return; // Don't call server API for guests
     }
 
+    // For logged-in users, update server cart
     try {
       await api.put('/users/updateCart', {
         productId: item._id,
         quantity: item.quantity + 1
       });
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error("Error updating cart:", error);
     }
   };
 
   const handleRemove = async (item, deletedItem = false) => {
     dispatch(removeFromCart({ item, deletedItem }));
 
-    // Keep localStorage in sync for guests
+    // Keep localStorage in sync for guests only
     if (!isLoggedIn) {
       const updatedCart = deletedItem || item.quantity === 1
         ? cart.filter((cartItem) => cartItem._id !== item._id)
@@ -115,8 +132,10 @@ const CartPage = () => {
               : cartItem
           );
       setCart(updatedCart);
+      return; // Don't call server API for guests
     }
 
+    // For logged-in users, update server cart
     if (deletedItem || item.quantity === 1) {
       try {
         await api.delete(`/users/cart/${item._id}`);
