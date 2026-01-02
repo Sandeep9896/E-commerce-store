@@ -14,9 +14,10 @@ import { useCallback } from "react";
 
 const Product = () => {
   const location = useLocation();
-  const handleAddToCart = useAddToCart();
+  const { handleAddToCart, added } = useAddToCart();
+  console.log("useAddToCart hook:", added);
   const { id } = useParams();
-  const user= useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.auth.user);
   const [opencheckout, setOpenCheckout] = useState(false);
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const Product = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
-const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
@@ -36,48 +37,48 @@ const [product, setProduct] = useState(null);
   ];
 
   const fetchRelatedProducts = useCallback(async (category, productId) => {
-  try {
-    const res = await api.get(`/users/related-products/${category}`);
-    const filteredProducts = res.data.products.filter((p) => p._id !== productId);
-    setRelatedProducts(filteredProducts);
-    console.log("Fetched related products:", filteredProducts);
-    console.log("Total related products:", filteredProducts.length);
-  } catch (err) {
-    console.error("Error fetching related products:", err);
-  }
-}, []);
+    try {
+      const res = await api.get(`/users/related-products/${category}`);
+      const filteredProducts = res.data.products.filter((p) => p._id !== productId);
+      setRelatedProducts(filteredProducts);
+      console.log("Fetched related products:", filteredProducts);
+      console.log("Total related products:", filteredProducts.length);
+    } catch (err) {
+      console.error("Error fetching related products:", err);
+    }
+  }, []);
 
-   
-
-  useEffect(() => {
-  const stateProduct = location.state?.product;
-  console.log("Location state product:", stateProduct, id);
-
-  // 1️⃣ If product came from navigation state
-  if (stateProduct && stateProduct._id === id) {
-    setProduct(stateProduct);
-    setActiveImage(stateProduct.images?.[0]?.url);
-    return;
-  }
-
-  // 2️⃣ Otherwise fetch by ID
-  setLoading(true);
-  api
-    .get(`/products/${id}`)
-    .then((res) => {
-      setProduct(res.data);
-      setActiveImage(res.data.images?.[0]?.url);
-    })
-    .catch((err) => console.error("Error fetching product:", err))
-    .finally(() => setLoading(false));
-}, [id, location.state]);
 
 
   useEffect(() => {
-  if (product?.category) {
-    fetchRelatedProducts(product.category, product._id);
-  }
-}, [product, fetchRelatedProducts]);
+    const stateProduct = location.state?.product;
+    console.log("Location state product:", stateProduct, id);
+
+    // 1️⃣ If product came from navigation state
+    if (stateProduct && stateProduct._id === id) {
+      setProduct(stateProduct);
+      setActiveImage(stateProduct.images?.[0]?.url);
+      return;
+    }
+
+    // 2️⃣ Otherwise fetch by ID
+    setLoading(true);
+    api
+      .get(`/products/${id}`)
+      .then((res) => {
+        setProduct(res.data);
+        setActiveImage(res.data.images?.[0]?.url);
+      })
+      .catch((err) => console.error("Error fetching product:", err))
+      .finally(() => setLoading(false));
+  }, [id, location.state]);
+
+
+  useEffect(() => {
+    if (product?.category) {
+      fetchRelatedProducts(product.category, product._id);
+    }
+  }, [product, fetchRelatedProducts]);
 
   // Scroll animations
   useEffect(() => {
@@ -102,11 +103,11 @@ const [product, setProduct] = useState(null);
   }, [relatedProducts]);
 
   const handleBuy = () => {
-    if(!user){
+    if (!user) {
       console.log("User not logged in, showing login modal");
       setShowLoginAlert(true);
     }
-    else{
+    else {
       navigate("/user/checkout", { state: { product } });
     }
   }
@@ -135,7 +136,7 @@ const [product, setProduct] = useState(null);
   return (
     <div className="bg-gradient-to-b from-background to-muted/20 min-h-screen">
       <LoginAlertModal isOpen={showLoginAlert} onClose={() => setShowLoginAlert(false)} />
-      
+
       {/* Breadcrumb */}
       <div className="bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -156,7 +157,7 @@ const [product, setProduct] = useState(null);
       {/* Product Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
-          
+
           {/* Left: Product Images */}
           <div className="space-y-4 animate-fadeInUp">
             {/* Main Image */}
@@ -168,16 +169,15 @@ const [product, setProduct] = useState(null);
                   className="object-contain w-full h-full transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
-              
+
               {/* Image Actions */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`p-3 rounded-full backdrop-blur-sm transition-all duration-300 ${
-                    isWishlisted 
-                      ? 'bg-error text-white' 
+                  className={`p-3 rounded-full backdrop-blur-sm transition-all duration-300 ${isWishlisted
+                      ? 'bg-error text-white'
                       : 'bg-white/90 text-foreground hover:bg-error hover:text-white'
-                  } shadow-lg hover:scale-110`}
+                    } shadow-lg hover:scale-110`}
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
                 </button>
@@ -215,11 +215,10 @@ const [product, setProduct] = useState(null);
                 <button
                   key={i}
                   onClick={() => setActiveImage(img.url)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
-                    activeImage === img.url 
-                      ? "border-brand-primary shadow-lg ring-2 ring-brand-primary/20" 
+                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${activeImage === img.url
+                      ? "border-brand-primary shadow-lg ring-2 ring-brand-primary/20"
                       : "border-border hover:border-brand-primary/50"
-                  }`}
+                    }`}
                 >
                   <img
                     src={img.url}
@@ -245,18 +244,17 @@ const [product, setProduct] = useState(null);
               <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 leading-tight">
                 {product.productName}
               </h1>
-              
+
               {/* Rating */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < (product.rating || 4) 
-                          ? "fill-warning text-warning" 
+                      className={`w-5 h-5 ${i < (product.rating || 4)
+                          ? "fill-warning text-warning"
                           : "text-muted-foreground/30"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -320,13 +318,20 @@ const [product, setProduct] = useState(null);
                 onClick={(e) => handleAddToCart(e, product)}
                 className="flex-1 group relative px-8 py-4 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl overflow-hidden"
               >
-                <span className="relative z-10 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
-                </span>
+                {added ?
+                  <span className="relative z-10 flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Added !
+                  </span>
+                  :
+                  <span className="relative z-10 flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Add to Cart
+                  </span>
+                }
                 <div className="absolute inset-0 bg-gradient-to-r from-brand-secondary to-brand-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
-              
+
               <button
                 onClick={handleBuy}
                 className="flex-1 px-8 py-4 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105"
@@ -400,8 +405,17 @@ const [product, setProduct] = useState(null);
                         onClick={(e) => handleAddToCart(e, item)}
                         className="w-full py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center"
                       >
-                        <ShoppingCart className="w-5 h-5 mr-2" />
-                        Add to Cart
+                        {added ?
+                          <span className="relative z-10 flex items-center justify-center">
+                            <ShoppingCart className="w-5 h-5 mr-2" />
+                            Added !
+                          </span>
+                          :
+                          <span className="relative z-10 flex items-center justify-center">
+                            <ShoppingCart className="w-5 h-5 mr-2" />
+                            Add to Cart
+                          </span>
+                        }
                       </button>
                     </div>
 

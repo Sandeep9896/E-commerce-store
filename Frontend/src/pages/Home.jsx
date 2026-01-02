@@ -8,13 +8,13 @@ import { addToCart } from "../slices/cartSlice";
 import api from "../api/api";
 import SuggestionBox from "../components/SuggestionBox";
 import useAddToCart from "../hooks/useAddToCart";
-import { ShoppingBag, TrendingUp, Users, Star, ArrowRight, Package, Truck, Shield, ChevronRight } from "lucide-react";
+import { ShoppingBag, TrendingUp, Users, Star, ArrowRight, Package, Truck, Shield, ChevronRight, ShoppingCart } from "lucide-react";
 
 
 export default function ProductCarousel() {
-    const handleAddToCart = useAddToCart();
+    const { handleAddToCart, added } = useAddToCart();
     const navigate = useNavigate();
-    const dispatch=useDispatch();
+    const dispatch = useDispatch();
     const [suggestions, setSuggestions] = useState([]);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -58,7 +58,7 @@ export default function ProductCarousel() {
     //     setTimeout(() => {
     //       e.target.textContent = "Add to Cart";
     //     }, 500);
-    
+
     //     dispatch(addToCart(product));
     //     console.log("Add to cart:", product);
     //     try {
@@ -95,11 +95,11 @@ export default function ProductCarousel() {
         setIsSearchFocused(false);
     }
 
-     const handleSelectProduct = (product) => {
-    console.log("Selected product:", product);
-    // navigate to product details page if needed
-    navigate(`/product/${product._id}`, { state: { product } });
-  };
+    const handleSelectProduct = (product) => {
+        console.log("Selected product:", product);
+        // navigate to product details page if needed
+        navigate(`/product/${product._id}`, { state: { product } });
+    };
     useEffect(() => {
         // Cleanup suggestions when search is cleared
         if (!isSearchFocused) {
@@ -121,7 +121,7 @@ export default function ProductCarousel() {
     useEffect(() => {
         fetchFeaturedProducts();
         setIsVisible(true);
-        
+
         // Intersection Observer for scroll animations
         const observerOptions = {
             threshold: 0.1,
@@ -142,10 +142,10 @@ export default function ProductCarousel() {
         return () => observer.disconnect();
     }, []);
 
-   
+
     return (
         <div className="w-full bg-gradient-to-b from-background to-muted/20">
-            
+
             {/* Hero Section */}
             <div className={`relative min-h-[80vh] flex items-center justify-center overflow-hidden transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                 {/* Background Pattern */}
@@ -165,14 +165,14 @@ export default function ProductCarousel() {
                                     New Arrivals Available
                                 </span>
                             </div>
-                            
+
                             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
                                 Discover Your
                                 <span className="block bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent bg-clip-text text-transparent animate-gradient">
                                     Perfect Style
                                 </span>
                             </h1>
-                            
+
                             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                                 Shop the latest trends in electronics, fashion, and home decor.
                                 Quality products at unbeatable prices.
@@ -187,9 +187,9 @@ export default function ProductCarousel() {
                                         onFocusChange={setIsSearchFocused}
                                     />
                                     {isSearchFocused && (
-                                        <SuggestionBox 
-                                            suggestions={suggestions} 
-                                            onSelect={handleSelectSuggestion} 
+                                        <SuggestionBox
+                                            suggestions={suggestions}
+                                            onSelect={handleSelectSuggestion}
                                         />
                                     )}
                                 </div>
@@ -197,7 +197,7 @@ export default function ProductCarousel() {
 
                             {/* CTA Buttons */}
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-                                <button 
+                                <button
                                     onClick={() => { navigate('/products'); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                     className="group relative px-8 py-4 bg-brand-primary hover:bg-brand-secondary text-white rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl overflow-hidden"
                                 >
@@ -207,8 +207,8 @@ export default function ProductCarousel() {
                                     </span>
                                     <div className="absolute inset-0 bg-gradient-to-r from-brand-secondary to-brand-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
                                     className="px-8 py-4 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105"
                                 >
@@ -220,7 +220,7 @@ export default function ProductCarousel() {
                         {/* Stats Section */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-16 animate-on-scroll opacity-0">
                             {stats.map((stat, index) => (
-                                <div 
+                                <div
                                     key={index}
                                     className="bg-background/80 backdrop-blur-sm rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border/50"
                                     style={{ animationDelay: `${index * 100}ms` }}
@@ -244,7 +244,7 @@ export default function ProductCarousel() {
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                         {features.map((feature, index) => (
-                            <div 
+                            <div
                                 key={index}
                                 className="flex items-center gap-4 p-6 bg-background rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-border/50"
                             >
@@ -288,7 +288,7 @@ export default function ProductCarousel() {
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                                    
+
                                     {/* Category Info Overlay */}
                                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                                         <h3 className="text-xl font-bold mb-1">
@@ -302,10 +302,10 @@ export default function ProductCarousel() {
 
                                 {/* Button */}
                                 <div className="p-4">
-                                    <button 
-                                        onClick={() => { 
-                                            navigate('/products', { state: { category: category.category } }); 
-                                            window.scrollTo({ top: 0, behavior: "smooth" }); 
+                                    <button
+                                        onClick={() => {
+                                            navigate('/products', { state: { category: category.category } });
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
                                         }}
                                         className="w-full py-3 bg-background text-brand-primary hover:bg-brand-primary hover:text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group-hover:shadow-lg"
                                     >
@@ -352,16 +352,24 @@ export default function ProductCarousel() {
 
                                     {/* Overlay with Add to Cart */}
                                     <div
-                                        className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-4 transition-all duration-300 ${
-                                            active === product.productName ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
-                                        }`}
+                                        className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-4 transition-all duration-300 ${active === product.productName ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
+                                            }`}
                                     >
-                                        <button 
-                                            onClick={(e) => handleAddToCart(e, product)} 
+                                        <button
+                                            onClick={(e) => handleAddToCart(e, product)}
                                             className="w-full py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center"
                                         >
-                                            <ShoppingBag className="w-5 h-5 mr-2" />
-                                            Add to Cart
+                                            {added ?
+                                                <span className="relative z-10 flex items-center justify-center">
+                                                    <ShoppingCart className="w-5 h-5 mr-2" />
+                                                    Added !
+                                                </span>
+                                                :
+                                                <span className="relative z-10 flex items-center justify-center">
+                                                    <ShoppingCart className="w-5 h-5 mr-2" />
+                                                    Add to Cart
+                                                </span>
+                                            }
                                         </button>
                                     </div>
 
@@ -398,8 +406,8 @@ export default function ProductCarousel() {
 
                     {/* Load More Button */}
                     <div className="text-center mt-12">
-                        <button 
-                            onClick={() => { navigate('/products'); window.scrollTo({ top: 0, behavior: "smooth" }); }} 
+                        <button
+                            onClick={() => { navigate('/products'); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                             className="group px-8 py-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-flex items-center"
                         >
                             View All Products

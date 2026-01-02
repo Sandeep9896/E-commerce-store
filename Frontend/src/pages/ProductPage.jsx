@@ -29,7 +29,7 @@ const ProductPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(category || "allProducts");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [sortBy, setSortBy] = useState("featured");
-  const addToCart = useAddToCart();
+  const { handleAddToCart: addToCart, added } = useAddToCart();
 
   // 🔹 Fetch Products
   const fetchProducts = async (pageNum = 1, append = false) => {
@@ -37,8 +37,7 @@ const ProductPage = () => {
     try {
       setLoading(true);
       const res = await api.get(
-        `/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&category=${
-          selectedCategory === "allProducts" ? "" : selectedCategory
+        `/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&category=${selectedCategory === "allProducts" ? "" : selectedCategory
         }`
       );
 
@@ -76,7 +75,7 @@ const ProductPage = () => {
   //   e.preventDefault();
   //   console.log("Adding to cart:", product);
   //   addToCart(e, product);
-    
+
   // };
 
   // 🔹 Category Filter Logic
@@ -118,7 +117,7 @@ const ProductPage = () => {
                 <Filter className="w-5 h-5 text-brand-primary" />
                 <span>Filters:</span>
               </div>
-              
+
               {/* Category Filter */}
               <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
                 <SelectTrigger className="w-[180px] border-2 hover:border-brand-primary transition-colors">
@@ -155,21 +154,19 @@ const ProductPage = () => {
             <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-md transition-all ${
-                  viewMode === "grid" 
-                    ? "bg-brand-primary text-white" 
+                className={`p-2 rounded-md transition-all ${viewMode === "grid"
+                    ? "bg-brand-primary text-white"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <Grid3x3 className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded-md transition-all ${
-                  viewMode === "list" 
-                    ? "bg-brand-primary text-white" 
+                className={`p-2 rounded-md transition-all ${viewMode === "list"
+                    ? "bg-brand-primary text-white"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <List className="w-5 h-5" />
               </button>
@@ -195,8 +192,8 @@ const ProductPage = () => {
             <p className="text-muted-foreground">Try adjusting your filters or search criteria</p>
           </div>
         ) : (
-          <div className={viewMode === "grid" 
-            ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6" 
+          <div className={viewMode === "grid"
+            ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6"
             : "flex flex-col gap-4"
           }>
             {products.map((product, index) => (
@@ -206,9 +203,8 @@ const ProductPage = () => {
                   setActive(active === product._id ? null : product._id);
                   handleSelectProduct(product);
                 }}
-                className={`group relative bg-background rounded-2xl border border-border/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden cursor-pointer animate-fadeInUp ${
-                  viewMode === "list" ? "flex flex-row" : "flex flex-col"
-                }`}
+                className={`group relative bg-background rounded-2xl border border-border/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden cursor-pointer animate-fadeInUp ${viewMode === "list" ? "flex flex-row" : "flex flex-col"
+                  }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {/* Image Container */}
@@ -216,23 +212,30 @@ const ProductPage = () => {
                   <img
                     src={product.images[0].url}
                     alt={product.productName}
-                    className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
-                      viewMode === "list" ? "w-full h-full" : "w-full h-[180px] sm:h-[240px]"
-                    }`}
+                    className={`object-cover transition-transform duration-700 group-hover:scale-110 ${viewMode === "list" ? "w-full h-full" : "w-full h-[180px] sm:h-[240px]"
+                      }`}
                   />
 
                   {/* Overlay with Add to Cart */}
                   <div
-                    className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-4 transition-all duration-300 ${
-                      active === product._id ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
-                    }`}
+                    className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-4 transition-all duration-300 ${active === product._id ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
+                      }`}
                   >
                     <button
                       onClick={(e) => addToCart(e, product)}
                       className="w-full py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center"
                     >
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                      Add to Cart
+                      {added ?
+                        <span className="relative z-10 flex items-center justify-center">
+                          <ShoppingCart className="w-5 h-5 mr-2" />
+                          Added !
+                        </span>
+                        :
+                        <span className="relative z-10 flex items-center justify-center">
+                          <ShoppingCart className="w-5 h-5 mr-2" />
+                          Add to Cart
+                        </span>
+                      }
                     </button>
                   </div>
 
@@ -254,12 +257,11 @@ const ProductPage = () => {
 
                 {/* Product Info */}
                 <div className={`p-4 flex flex-col ${viewMode === "list" ? "flex-grow justify-center" : ""}`}>
-                  <h3 className={`font-semibold text-foreground mb-2 group-hover:text-brand-primary transition-colors ${
-                    viewMode === "list" ? "text-xl" : "text-base sm:text-lg truncate"
-                  }`}>
+                  <h3 className={`font-semibold text-foreground mb-2 group-hover:text-brand-primary transition-colors ${viewMode === "list" ? "text-xl" : "text-base sm:text-lg truncate"
+                    }`}>
                     {product.productName}
                   </h3>
-                  
+
                   {viewMode === "list" && (
                     <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
                       {product.description}
@@ -337,11 +339,10 @@ const ProductPage = () => {
                   <button
                     key={i}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      page === pageNum
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${page === pageNum
                         ? "bg-brand-primary text-white shadow-lg scale-110"
                         : "border-2 border-border hover:border-brand-primary hover:text-brand-primary"
-                    }`}
+                      }`}
                   >
                     {pageNum}
                   </button>

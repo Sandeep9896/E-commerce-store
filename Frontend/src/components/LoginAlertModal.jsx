@@ -26,6 +26,15 @@ const LoginAlertModal = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] overflow-hidden p-0">
+        {/* Close Button - Explicit */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 p-2 rounded-lg bg-white/80 hover:bg-white text-foreground hover:text-brand-primary transition-all duration-200 border border-brand-primary/10 hover:border-brand-primary/30 shadow-lg hover:shadow-brand-primary/20"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Decorative Background */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-warning/10 rounded-full -translate-y-16 translate-x-16 animate-float"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-brand-primary/10 rounded-full translate-y-12 -translate-x-12 animate-float" style={{ animationDelay: "1s" }}></div>

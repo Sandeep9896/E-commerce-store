@@ -176,6 +176,19 @@ const CartPage = () => {
 
   }
 
+  const handleClearCart = async () => {
+    dispatch(clearCart());
+    if (!isLoggedIn) {
+      setCart([]);
+      return;
+    }
+    try {
+      await api.delete('/users/cart');
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
+
   // Proceed to payment handler and it call from address confirm modal, it will call razorpay payment gateway
   
   // callback function after payment successfull
@@ -252,7 +265,7 @@ const CartPage = () => {
               </p>
             </div>
             <button
-              onClick={() => dispatch(clearCart())}
+              onClick={handleClearCart}
               className="hidden sm:flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all duration-300 border border-white/20"
             >
               <Trash2 className="w-5 h-5" />
