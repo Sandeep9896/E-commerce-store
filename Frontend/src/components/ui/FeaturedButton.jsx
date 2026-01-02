@@ -16,7 +16,7 @@ function FeaturedButton({ productId, isFeatured, featuredRequest }) {
       disabled={loading || isFeatured || featuredRequest}
       onClick={handleFeatureRequest}
       className={`p-2 rounded-lg ${
-        isFeatured ? "bg-green-500" : "bg-blue-500"
+        isFeatured ? "bg-success" : "bg-info"
       } text-white`}
     >
       {isFeatured

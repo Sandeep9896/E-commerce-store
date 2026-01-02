@@ -4,70 +4,86 @@
 /* Dark variant helper (optional) */
 @custom-variant dark (&:is(.dark *));
 
-/* Raw CSS variable definitions */
+/* 
+  🎨 CENTRALIZED COLOR PALETTE
+  Change these colors to update your entire theme!
+*/
 :root {
+  /* Radius */
   --radius: 0.625rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --primary: #dda15e;
-  --color-primary-100: #34210b;
-  --color-primary-200: #684216;
-  --color-primary-300: #9d6321;
-  --color-primary-400: #d1842c;
-  --color-primary-500: #dda15e;
-  --primary-600: #e4b57f;
-  --primary-700: #ebc79f;
-  --primary-800: #f1dabf;
-  --primary-900: #f8ecdf;
+  /* Brand Colors - Change these to customize your theme */
+  --brand-primary: #dda15e;      /* Golden/Amber - Main brand color */
+  --brand-secondary: #bc6c25;    /* Darker amber - Accent/hover color */
+  --brand-dark: #283618;         /* Dark green - Footer/dark sections */
+  --brand-light: #fefae0;        /* Cream - Light text/backgrounds */
+  --brand-accent: #606c38;       /* Olive green - Additional accent */
 
-  --background: #fefae0;
-  --foreground: #283618;
-  --primary: #dda15e;
-  --secondary: #bc6c25;
-  --accent: #606c38;
+  /* UI Colors (derived from brand colors) */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: var(--brand-primary);
+  --secondary: var(--brand-secondary);
+  --accent: var(--brand-accent);
+  
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: var(--brand-accent);
 
-
-  --border: #e5e7eb;
-  --input: #d1d5db;
-  --ring: #606c38;
+  /* Status Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
 }
 
 .dark {
-  --bg: #1a1a1a;
+  --background: #1a1a1a;
   --foreground: #fafafa;
   --primary: #e4b57f;
   --secondary: #bc6c25;
   --accent: #fefae0;
-  --border: #333;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --border: #333333;
   --ring: #bc6c25;
 }
 
 /* Map CSS vars to Tailwind theme tokens */
 @theme {
+  /* Brand Colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
+  --color-brand-accent: var(--brand-accent);
+
+  /* UI Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-
-  --color-primary-100: var(--color-primary-100);
-  --color-primary-200: var(--color-primary-200);
-  --color-primary-300: var(--color-primary-300);
-  --color-primary-400: var(--color-primary-400);
-  --color-primary-500: var(--color-primary-500);
-  --color-primary-600: var(--primary-600);
-  --color-primary-700: var(--primary-700);
-  --color-primary-800: var(--primary-800);
-  --color-primary-900: var(--primary-900);
-
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
-
+  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Status Colors */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
+  /* Radius */
   --radius: var(--radius);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -76,5 +92,156 @@
 }
 
 body {
-  @apply bg-background text-foreground  ;
+  @apply bg-background text-foreground;
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom gradient backgrounds */
+.gradient-1 {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+}
+
+.gradient-2 {
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-primary) 100%);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Pulse animation for badges */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(221, 161, 94, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(221, 161, 94, 0);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
 }

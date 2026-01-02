@@ -76,7 +76,7 @@ const SellerProducts = () => {
     <>
       <button 
         onClick={() => setShowUploadModal(true)} 
-        className="mt-4 mb-6 w-28 h-10 text-ellipsis text-[12px] sm:w-48 sm:h-10  absolute right-0 bg-green-500 text-white  py-2 rounded-full hover:bg-green-600"
+        className="mt-4 mb-6 w-28 h-10 text-ellipsis text-[12px] sm:w-48 sm:h-10  absolute right-0 bg-success text-white  py-2 rounded-full hover:bg-success/90"
       >
         Add New Product
       </button>
@@ -93,7 +93,7 @@ const SellerProducts = () => {
       <div>
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
           {products.length === 0 ? (
-            <p className="text-gray-500 col-span-2 text-center">No products found. Add your first product!</p>
+            <p className="text-muted-foreground col-span-2 text-center">No products found. Add your first product!</p>
           ) : (
             products.map(product => {
               const isEditing = editingProductId === product._id;
@@ -104,7 +104,7 @@ const SellerProducts = () => {
                   {!isEditing && (
                     <button 
                       onClick={() => handleEdit(product)} 
-                      className="bg-primary text-foreground absolute right-0 top-0 px-4 py-2 rounded-full hover:bg-blue-600"
+                      className="bg-primary text-foreground absolute right-0 top-0 px-4 py-2 rounded-full hover:bg-primary/90"
                     >
                       Edit
                     </button>
@@ -144,7 +144,7 @@ const SellerProducts = () => {
                       />
                     </>
                   ) : (
-                    <p className="text-gray-600 mb-2">{currentProduct.description}</p>
+                    <p className="text-muted-foreground mb-2">{currentProduct.description}</p>
                   )}
 
                   {isEditing ? (
@@ -160,7 +160,7 @@ const SellerProducts = () => {
                       />
                     </>
                   ) : (
-                    <p className="text-gray-800 font-bold mb-2">${currentProduct.price}</p>
+                    <p className="text-foreground font-bold mb-2">${currentProduct.price}</p>
                   )}
 
                   {isEditing ? (
@@ -186,13 +186,13 @@ const SellerProducts = () => {
                     <div className="absolute right-5 bottom-4 flex gap-2">
                       <button 
                         onClick={handleCancel}
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                        className="bg-muted text-foreground px-4 py-2 rounded hover:bg-muted/80"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={() => handleSave(product._id)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        className="bg-info text-white px-4 py-2 rounded hover:bg-info/90"
                       >
                         Save
                       </button>

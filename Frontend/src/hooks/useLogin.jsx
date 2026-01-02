@@ -24,6 +24,7 @@ function useLogin(role) {
     async (e, formData) => {
       e.preventDefault();
       setLoading(true);
+      setError(null); // Clear previous errors
       const form = e.currentTarget;
       if (!formData) {
         var formData = new FormData(form);
@@ -48,12 +49,14 @@ function useLogin(role) {
         
         // Save to localStorage based on role
         console.log("isLoggedIn:", isLoggedIn, role, data);
+        setLoading(false);
         navigate(returnUrl); // ensure your route is lowercase
+        return true; // Success
       } catch (err) {
         console.error("Login failed:", err);
         setError(err.response?.data?.message || "Login failed. Please try again.");
-      } finally {
         setLoading(false);
+        return false; // Failure
       }
     },
     [dispatch, navigate, role, returnUrl]

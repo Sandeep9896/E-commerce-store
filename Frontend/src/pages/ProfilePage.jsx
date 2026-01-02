@@ -2,7 +2,7 @@ import React, { use, useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
-import { Camera, Edit3, User, Mail, MapPin, Phone } from "lucide-react";
+import { Camera, Edit3, User, Mail, MapPin, Phone, Package, Clock, CheckCircle, TrendingUp, Save, X, ShoppingBag, CreditCard, MapPinned, Calendar } from "lucide-react";
 import useUploadAvatar from "../hooks/useUploadAvatar";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ const ProfilePage = () => {
     isLoggedIn && (async () => {
       try {
         const { data } = await api.post('/users/fetch-orders', {
-          allOrders: false
+          allOrders: true
         });
         console.log("Fetched orders:", data);
         setOrders(data.orders || []);
@@ -142,22 +142,35 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 border-4 border-brand-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">Loading Profile</h3>
+          <p className="text-muted-foreground">Please wait...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-foreground mt-20">
-        <p className="text-lg mb-4 text-red-500">Error: {error}</p>
-        <Button
-          onClick={() => window.location.reload()}
-          className="bg-primary text-foreground hover:bg-secondary"
-        >
-          Try Again
-        </Button>
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 mx-auto mb-6 bg-error/10 rounded-full flex items-center justify-center">
+            <X className="w-10 h-10 text-error" />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-2">Oops! Something went wrong</h3>
+          <p className="text-error mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-300"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -165,233 +178,372 @@ const ProfilePage = () => {
   // Get avatar URL safely
   const avatarUrl = user?.avatar?.url || user?.avatar || "/images/user.svg";
   console.log("Avatar URL:", avatarUrl);
+  
+  // Calculate stats
+  const totalOrders = orders.length;
+  const deliveredOrders = orders.filter(o => o.orderStatus === "Delivered").length;
+  const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+  
   return (
-
-    <div className="max-w-4xl mx-auto p-6 mt-10">
-      <h1 className="text-3xl font-bold text-foreground mb-6 text-center">
-        My Profile
-      </h1>
-
-      <Card className="p-6 shadow-lg rounded-xl bg-accent/60 border border-border">
-        {/* Profile Header */}
-        <div className="flex flex-col sm:flex-row items-center gap-6 border-b pb-6">
-          <div className="relative w-32 h-32">
-            <img
-              src={avatarUrl}
-              alt="User Avatar"
-              className="w-32 h-32 rounded-full object-cover border-4 border-primary shadow-md"
-            />
-            <label
-              htmlFor="profileImage"
-              className="absolute bottom-1 right-1 bg-primary p-2 rounded-full text-foreground cursor-pointer hover:bg-secondary transition"
-            >
-              <Camera size={18} />
-              <input
-                id="profileImage"
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e, "users/upload-avatar")}
-              />
-            </label>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl font-semibold text-foreground">
-              {form.name || "User"}
-            </h2>
-            <p className="text-foreground/70">{form.email}</p>
-            <p className="text-sm text-foreground/70 mt-1">
-              Member since {form.createdAt
-                ? new Date(form.createdAt).toLocaleDateString()
-                : "2024"}
-            </p>
-          </div>
-
-          <div className="ml-auto mt-3 sm:mt-0">
-            <Button
+    <div className="bg-gradient-to-b from-background to-muted/20 min-h-screen">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            {/* Avatar */}
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+                <img
+                  src={avatarUrl}
+                  alt="User Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <label
+                htmlFor="profileImage"
+                className="absolute bottom-2 right-2 bg-white p-3 rounded-full text-brand-primary cursor-pointer hover:bg-brand-light transition-all duration-300 shadow-lg hover:scale-110"
+              >
+                <Camera size={20} />
+                <input
+                  id="profileImage"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e, "users/upload-avatar")}
+                />
+              </label>
+            </div>
+            
+            {/* User Info */}
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+                {form.name || "User"}
+              </h1>
+              <p className="text-white/90 text-lg mb-1">{form.email}</p>
+              <p className="text-white/80 text-sm flex items-center justify-center sm:justify-start gap-2">
+                <Calendar className="w-4 h-4" />
+                Member since {form.createdAt ? new Date(form.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "2024"}
+              </p>
+            </div>
+            
+            {/* Edit Button */}
+            <button
               onClick={() => {
                 if (isEditing) {
-                  // Reset form to current user data when canceling
                   setForm(user || storedUser || {});
                   setError(null);
                 }
                 setIsEditing(!isEditing);
               }}
-              className="bg-primary text-foreground hover:bg-secondary"
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-semibold transition-all duration-300 border border-white/20 flex items-center gap-2"
             >
-              {isEditing ? "Cancel" : <Edit3 size={16} className="mr-2" />}
-              {isEditing ? "" : "Edit Profile"}
-            </Button>
+              {isEditing ? (
+                <>
+                  <X className="w-5 h-5" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Edit3 className="w-5 h-5" />
+                  Edit Profile
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 -mt-16">
+          <div className="bg-background rounded-2xl border border-border shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-info/10 flex items-center justify-center">
+                <Package className="w-7 h-7 text-info" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Orders</p>
+                <p className="text-3xl font-bold text-foreground">{totalOrders}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-background rounded-2xl border border-border shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center">
+                <CheckCircle className="w-7 h-7 text-success" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Delivered</p>
+                <p className="text-3xl font-bold text-foreground">{deliveredOrders}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-background rounded-2xl border border-border shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-7 h-7 text-brand-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Spent</p>
+                <p className="text-3xl font-bold text-foreground">${totalSpent.toFixed(0)}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Profile Info */}
-        <div className="mt-6 space-y-5">
-          {/* Name */}
-          <div className="flex items-center gap-3">
-            <User className="text-primary" />
-            {isEditing ? (
-              <Input
-                type="text"
-                name="name"
-                value={form.name || ""}
-                onChange={handleChange}
-                className="flex-1 text-foreground"
-              />
-            ) : (
-              <p className="text-foreground text-lg">{form.name || "Not set"}</p>
-            )}
+        {/* Profile Information Card */}
+        <div className="bg-background rounded-2xl border border-border shadow-lg overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 px-6 py-4 border-b border-border">
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <User className="w-6 h-6" />
+              Personal Information
+            </h2>
           </div>
-
-          {/* Email */}
-          <div className="flex items-center gap-3">
-            <Mail className="text-primary" />
-            {isEditing ? (
-              <Input
-                type="email"
-                name="email"
-                value={form.email || ""}
-                onChange={handleChange}
-                className="flex-1 text-foreground"
-                disabled={true} // Email should not be editable
-              />
-            ) : (
-              <p className="text-foreground text-lg">{form.email || "Not set"}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div className="flex items-center gap-3">
-            <Phone className="text-primary" />
-            {isEditing ? (
-              <Input
-                type="text"
-                name="phone"
-                value={form.phone || ""}
-                onChange={handleChange}
-                className="flex-1 text-foreground"
-              />
-            ) : (
-              <p className="text-foreground text-lg">{form.phone || "Not set"}</p>
-            )}
-          </div>
-
-          {/* Address */}
-          <div className="flex items-center gap-3">
-            <MapPin className="text-primary" />
-            {isEditing ? (
-              <div className="flex flex-col w-full gap-2">
-                <label className="text-foreground font-medium">Street Address</label>
-                <Input
-                  type="text"
-                  name="street"
-                  value={form.address?.street || ""}
-                  onChange={handleChange}
-                  className="flex-1 text-foreground"
-                />
-                <label className="text-foreground font-medium"> City </label>
-                <Input
-                  type="text"
-                  name="city"
-                  value={form.address?.city || ""}
-                  onChange={handleChange}
-                  className="flex-1 text-foreground p-2"
-                />
-                <label className="text-foreground font-medium"> State </label>
-                <Input
-                  type="text"
-                  name="state"
-                  value={form.address?.state || ""}
-                  onChange={handleChange}
-                  className="flex-1 text-foreground p-2"
-                />
-                <label className="text-foreground font-medium"> Pincode </label>
-                <Input
-                  type="text"
-                  name="pincode"
-                  value={form.address?.pincode || ""}
-                  onChange={handleChange}
-                  className="flex-1 text-foreground p-2"
-                />
-
-
-              </div>
-
-            ) : (
-              <p className="text-foreground text-lg">{form.address?.street + ", " + form.address?.city + ", " + form.address?.state + " - " + form.address?.pincode || "Not set"}</p>
-            )}
-          </div>
-
-          {isEditing && (
-            <Button
-              onClick={handleSave}
-              className="mt-5 bg-primary text-foreground hover:bg-secondary w-full sm:w-auto"
-            >
-              Save Changes
-            </Button>
-          )}
-        </div>
-      </Card>
-
-      {/* Order History Section */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-semibold text-foreground mb-4">
-          Recent Orders <button className=" mt-5 hover:text-primary " onClick={()=> navigate("/user/recent-orders")} ><ExternalLink className="w-6 h-5" />
-          </button>
-        </h2>
-        <div className="bg-accent/50 rounded-lg p-4 shadow-md text-sm sm:text-base">
-          {/* <p className="text-foreground/70">You have no recent orders.</p> */}
-          {orders.length === 0 && (
-            <p className="text-foreground/70">You have no recent orders.</p>
-          )}
-          {orders.length > 0 && orders.map((order) => (
-            <div
-              key={order._id}
-              className="flex flex-col gap-2 py-4 px-3 rounded-lg bg-accent/40 border border-border shadow-sm hover:shadow-md transition"
-            >
-              {/* Top Row */}
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">
-                  Order #{order._id.slice(-6)}
-                </p>
-
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium
-        ${order.orderStatus === "Delivered"
-                      ? "bg-green-100 text-green-700"
-                      : order.orderStatus === "Shipped"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }
-      `}
-                >
-                  {order.orderStatus}
-                </span>
-              </div>
-
-              {/* Meta Info */}
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground">
-                <p>
-                  📅 {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-                <p>
-                  💳 Razorpay
-                </p>
-              </div>
-
-              {/* Amount */}
-              <div className="flex justify-between items-center pt-2 border-t border-border">
-                <p className="text-sm text-foreground">
-                  Total Amount
-                </p>
-                <p className="text-base font-semibold text-foreground">
-                  ₹{order.totalAmount.toFixed(2)}
-                </p>
+          <div className="p-6 space-y-6">
+            {/* Name */}
+            <div className="bg-muted/30 rounded-xl p-4 hover:bg-muted/50 transition-all duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="text-brand-primary w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground block mb-1">Full Name</label>
+                  {isEditing ? (
+                    <Input
+                      type="text"
+                      name="name"
+                      value={form.name || ""}
+                      onChange={handleChange}
+                      className="bg-background border-border focus:border-brand-primary"
+                      placeholder="Enter your name"
+                    />
+                  ) : (
+                    <p className="text-foreground text-lg font-semibold">{form.name || "Not set"}</p>
+                  )}
+                </div>
               </div>
             </div>
 
-          ))}
+            {/* Email */}
+            <div className="bg-muted/30 rounded-xl p-4 hover:bg-muted/50 transition-all duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center flex-shrink-0">
+                  <Mail className="text-info w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground block mb-1">Email Address</label>
+                  {isEditing ? (
+                    <Input
+                      type="email"
+                      name="email"
+                      value={form.email || ""}
+                      onChange={handleChange}
+                      className="bg-background border-border opacity-60 cursor-not-allowed"
+                      disabled={true}
+                    />
+                  ) : (
+                    <p className="text-foreground text-lg font-semibold">{form.email || "Not set"}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div className="bg-muted/30 rounded-xl p-4 hover:bg-muted/50 transition-all duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <Phone className="text-success w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground block mb-1">Phone Number</label>
+                  {isEditing ? (
+                    <Input
+                      type="text"
+                      name="phone"
+                      value={form.phone || ""}
+                      onChange={handleChange}
+                      className="bg-background border-border focus:border-brand-primary"
+                      placeholder="Enter phone number"
+                    />
+                  ) : (
+                    <p className="text-foreground text-lg font-semibold">{form.phone || "Not set"}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="bg-muted/30 rounded-xl p-4 hover:bg-muted/50 transition-all duration-300">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
+                  <MapPinned className="text-warning w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">Delivery Address</label>
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground block mb-1">Street Address</label>
+                        <Input
+                          type="text"
+                          name="street"
+                          value={form.address?.street || ""}
+                          onChange={handleChange}
+                          className="bg-background border-border focus:border-brand-primary"
+                          placeholder="123 Main Street"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">City</label>
+                          <Input
+                            type="text"
+                            name="city"
+                            value={form.address?.city || ""}
+                            onChange={handleChange}
+                            className="bg-background border-border focus:border-brand-primary"
+                            placeholder="City"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">State</label>
+                          <Input
+                            type="text"
+                            name="state"
+                            value={form.address?.state || ""}
+                            onChange={handleChange}
+                            className="bg-background border-border focus:border-brand-primary"
+                            placeholder="State"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground block mb-1">Pincode</label>
+                        <Input
+                          type="text"
+                          name="pincode"
+                          value={form.address?.pincode || ""}
+                          onChange={handleChange}
+                          className="bg-background border-border focus:border-brand-primary"
+                          placeholder="123456"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-foreground text-lg font-semibold leading-relaxed">
+                      {form.address?.street && form.address?.city 
+                        ? `${form.address.street}, ${form.address.city}, ${form.address.state} - ${form.address.pincode}`
+                        : "Not set"}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={handleSave}
+                  className="flex-1 sm:flex-none px-8 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  <Save className="w-5 h-5" />
+                  Save Changes
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Order History Section */}
+        <div className="bg-background rounded-2xl border border-border shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 px-6 py-4 border-b border-border flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <ShoppingBag className="w-6 h-6" />
+              Recent Orders
+            </h2>
+            <button
+              onClick={() => navigate("/user/recent-orders")}
+              className="flex items-center gap-2 px-4 py-2 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-all duration-300 font-semibold"
+            >
+              View All
+              <ExternalLink className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="p-6">
+            {orders.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                  <Package className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground text-lg">No orders yet</p>
+                <p className="text-sm text-muted-foreground mb-4">Start shopping to see your orders here</p>
+                <button
+                  onClick={() => navigate("/")}
+                  className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition-colors"
+                >
+                  Start Shopping
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.slice(0, 3).map((order) => (
+                  <div
+                    key={order._id}
+                    className="group bg-muted/30 rounded-xl p-5 border border-border hover:border-brand-primary/50 hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                          <Package className="w-6 h-6 text-brand-primary" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Order #{order._id.slice(-8).toUpperCase()}</p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(order.createdAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <span
+                        className={`px-4 py-2 rounded-full font-semibold text-sm inline-flex items-center gap-2 w-fit
+                          ${order.orderStatus === "Delivered"
+                            ? "bg-success/10 text-success"
+                            : order.orderStatus === "Shipped"
+                              ? "bg-info/10 text-info"
+                              : "bg-warning/10 text-warning"
+                          }
+                        `}
+                      >
+                        {order.orderStatus === "Delivered" && <CheckCircle className="w-4 h-4" />}
+                        {order.orderStatus}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CreditCard className="w-4 h-4" />
+                        <span>Razorpay</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Total Amount</p>
+                        <p className="text-2xl font-bold text-brand-primary">
+                          ${order.totalAmount.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

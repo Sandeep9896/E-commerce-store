@@ -85,8 +85,8 @@ const SellerDashboard = () => {
               <p className="text-foreground/70 text-sm font-medium">Total Products</p>
               <p className="text-3xl font-bold text-foreground mt-2">{stats.totalProducts}</p>
             </div>
-            <div className="bg-blue-500/20 p-4 rounded-lg">
-              <Package className="text-blue-500" size={28} />
+            <div className="bg-info/20 p-4 rounded-lg">
+              <Package className="text-info" size={28} />
             </div>
           </div>
         </div>
@@ -98,8 +98,8 @@ const SellerDashboard = () => {
               <p className="text-foreground/70 text-sm font-medium">Total Stock</p>
               <p className="text-3xl font-bold text-foreground mt-2">{stats.totalStock}</p>
             </div>
-            <div className="bg-green-500/20 p-4 rounded-lg">
-              <ShoppingCart className="text-green-500" size={28} />
+            <div className="bg-success/20 p-4 rounded-lg">
+              <ShoppingCart className="text-success" size={28} />
             </div>
           </div>
         </div>
@@ -111,8 +111,8 @@ const SellerDashboard = () => {
               <p className="text-foreground/70 text-sm font-medium">Total Sold</p>
               <p className="text-3xl font-bold text-foreground mt-2">{stats.totalSold}</p>
             </div>
-            <div className="bg-purple-500/20 p-4 rounded-lg">
-              <TrendingUp className="text-purple-500" size={28} />
+            <div className="bg-brand-primary/20 p-4 rounded-lg">
+              <TrendingUp className="text-brand-primary" size={28} />
             </div>
           </div>
         </div>
@@ -124,8 +124,8 @@ const SellerDashboard = () => {
               <p className="text-foreground/70 text-sm font-medium">Total Revenue</p>
               <p className="text-3xl font-bold text-foreground mt-2">${stats.totalRevenue.toLocaleString()}</p>
             </div>
-            <div className="bg-yellow-500/20 p-4 rounded-lg">
-              <DollarSign className="text-yellow-500" size={28} />
+            <div className="bg-warning/20 p-4 rounded-lg">
+              <DollarSign className="text-warning" size={28} />
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@ const SellerDashboard = () => {
         {/* Highest Month */}
         <div className="bg-accent rounded-lg p-6 shadow-md border border-border">
           <p className="text-foreground/70 text-sm font-medium mb-2">Highest Sales Month</p>
-          <p className="text-2xl font-bold text-green-500">
+          <p className="text-2xl font-bold text-success">
             {stats.monthlyData.length > 0
               ? stats.monthlyData.reduce((max, curr) => curr.sales > max.sales ? curr : max).month
               : 'N/A'}
@@ -160,7 +160,7 @@ const SellerDashboard = () => {
         {/* Lowest Month */}
         <div className="bg-accent rounded-lg p-6 shadow-md border border-border">
           <p className="text-foreground/70 text-sm font-medium mb-2">Lowest Sales Month</p>
-          <p className="text-2xl font-bold text-red-500">
+          <p className="text-2xl font-bold text-error">
             {stats.monthlyData.length > 0
               ? stats.monthlyData.reduce((min, curr) => curr.sales < min.sales ? curr : min).month
               : 'N/A'}
@@ -175,7 +175,7 @@ const SellerDashboard = () => {
         {/* Average Monthly */}
         <div className="bg-accent rounded-lg p-6 shadow-md border border-border">
           <p className="text-foreground/70 text-sm font-medium mb-2">Average Monthly Sales</p>
-          <p className="text-2xl font-bold text-blue-500">
+          <p className="text-2xl font-bold text-info">
             ${stats.monthlyData.length > 0
               ? Math.round(stats.monthlyData.reduce((sum, curr) => sum + curr.sales, 0) / stats.monthlyData.length).toLocaleString()
               : '0'}

@@ -58,13 +58,13 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
   return (
    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fadeIn">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        <h2 className="text-2xl font-semibold text-foreground mb-6 text-center">
           Upload New Product
         </h2>
 
         <form onSubmit={handleUpload} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Product Name
             </label>
             <input
@@ -73,12 +73,12 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
               value={formData.productName || ''}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Description
             </label>
             <textarea
@@ -87,14 +87,14 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
               value={formData.description || ''}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-brand-primary"
             ></textarea>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Category
             </label>
-            <select name="category" id="category" value={formData.category || ''} onChange={handleChange} required className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <select name="category" id="category" value={formData.category || ''} onChange={handleChange} required className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-brand-primary">
               <option value="">Select a category</option>
               <option value="Electronics">Electronics</option>
               <option value="Clothing">Clothing</option>
@@ -112,7 +112,7 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Price
               </label>
               <input
@@ -121,11 +121,11 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
                 value={formData.price || ''}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Stock Quantity
               </label>
               <input
@@ -134,7 +134,7 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
                 value={formData.stock || ''}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -150,10 +150,10 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
               onChange={handleChange}
               accept="image/*"
               required
-              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-400 file:text-white hover:file:bg-amber-500"
+              className="block w-full text-sm text-foreground/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-brand-primary file:text-white hover:file:bg-brand-secondary"
             />
             {formData.images && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Selected: {formData.images.name}
               </p>
             )}
@@ -162,14 +162,14 @@ const UploadProductModal = ({ setShowModal, onSuccess }) => {
           <button
             type="submit"
             disabled={uploading}
-            className="w-full py-2 mt-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 mt-4 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {uploading ? 'Uploading...' : 'Upload Product'}
           </button>
         </form>
 
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition"
           onClick={() => setShowModal(false)}
           disabled={uploading}
         >

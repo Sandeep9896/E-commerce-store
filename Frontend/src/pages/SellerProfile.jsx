@@ -136,7 +136,7 @@ const SellerProfile = () => {
   if (error) {
     return (
       <div className="text-center text-foreground mt-20">
-        <p className="text-lg mb-4 text-red-500">Error: {error}</p>
+        <p className="text-lg mb-4 text-error">Error: {error}</p>
         <Button
           onClick={() => window.location.reload()}
           className="bg-primary text-foreground hover:bg-secondary"
