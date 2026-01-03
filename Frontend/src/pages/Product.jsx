@@ -10,6 +10,7 @@ import HandleCheckOut from "../components/HandleCheckOut";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import LoginAlertModal from "../components/LoginAlertModal";
+import ProductSkeleton from "../components/ProductSkeleton";
 import { useCallback } from "react";
 
 const Product = () => {
@@ -29,6 +30,7 @@ const Product = () => {
   const [product, setProduct] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(true);
 
   const productFeatures = [
     { icon: Truck, text: "Free Delivery", subtext: "On orders over $50" },
@@ -38,6 +40,7 @@ const Product = () => {
 
   const fetchRelatedProducts = useCallback(async (category, productId) => {
     try {
+      setLoadingRelated(true);
       const res = await api.get(`/users/related-products/${category}`);
       const filteredProducts = res.data.products.filter((p) => p._id !== productId);
       setRelatedProducts(filteredProducts);
@@ -45,6 +48,8 @@ const Product = () => {
       console.log("Total related products:", filteredProducts.length);
     } catch (err) {
       console.error("Error fetching related products:", err);
+    } finally {
+      setLoadingRelated(false);
     }
   }, []);
 
@@ -372,7 +377,7 @@ const Product = () => {
         </div>
 
         {/* Related Products */}
-        {relatedProducts.length > 0 && (
+        {(loadingRelated || relatedProducts.length > 0) && (
           <div className="animate-on-scroll opacity-0 transition-all duration-700" style={{ transform: 'translateY(20px)' }}>
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -384,7 +389,12 @@ const Product = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-              {relatedProducts.slice(0, 5).map((item, index) => (
+              {loadingRelated ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <ProductSkeleton key={`related-skeleton-${index}`} />
+                ))
+              ) : (
+                relatedProducts.slice(0, 5).map((item, index) => (
                 <div
                   key={item._id}
                   onClick={() => handleSelectProduct(item)}
@@ -447,7 +457,8 @@ const Product = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
 
             {/* View More Button */}

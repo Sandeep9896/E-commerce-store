@@ -464,7 +464,7 @@ const ProfilePage = () => {
               Recent Orders
             </h2>
             <button
-              onClick={() => navigate("/user/recent-orders")}
+              onClick={() => navigate("/user/recent-orders", { state: { orders } })}
               className="flex items-center gap-2 px-4 py-2 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-all duration-300 font-semibold"
             >
               View All

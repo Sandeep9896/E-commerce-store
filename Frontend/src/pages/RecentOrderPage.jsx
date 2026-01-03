@@ -1,6 +1,7 @@
 import React, { use, useEffect } from "react";
 import { Card } from "../components/ui/card";
 import api from "../api/api";
+import { useLocation } from "react-router-dom"
 import { Check, Package, Clock, MapPin, CreditCard, ArrowRight, ShoppingBag, CheckCircle, XCircle, Truck, Search } from "lucide-react";
 
 
@@ -10,6 +11,8 @@ const RecentOrderPage = () => {
     const [orders, setOrders] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [searchTerm, setSearchTerm] = React.useState("");
+    const location = useLocation();
+    const Order=location.state?.orders || [];
 
     useEffect(() => {
         const fetchRecentOrders = async () => {
@@ -28,7 +31,14 @@ const RecentOrderPage = () => {
                 setLoading(false);
             }
         };
-        fetchRecentOrders();
+        if (Order.length > 0) {
+            console.log("Using orders from location state:", Order);
+            setOrders(Order);
+            setLoading(false);
+        }
+        else {
+            fetchRecentOrders();
+        }
     }, []);
 
     // Filter orders based on search
@@ -112,7 +122,7 @@ const RecentOrderPage = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3  gap-8">
                     {/* Orders List */}
                     <div className="lg:col-span-1">
                         {/* Search Bar */}

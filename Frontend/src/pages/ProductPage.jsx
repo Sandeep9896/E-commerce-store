@@ -5,6 +5,7 @@ import { Card } from "../components/ui/card";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import useAddToCart from "../hooks/useAddToCart";
+import ProductSkeleton from "../components/ProductSkeleton";
 import { ShoppingCart, Star, Package, Filter, Grid3x3, List, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
@@ -176,14 +177,13 @@ const ProductPage = () => {
 
         {/* Product Grid/List */}
         {loading && products.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <div className="relative w-20 h-20 mx-auto mb-6">
-                <div className="absolute inset-0 border-4 border-brand-primary/20 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
-              </div>
-              <p className="text-muted-foreground">Loading products...</p>
-            </div>
+          <div className={viewMode === "grid"
+            ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6"
+            : "flex flex-col gap-4"
+          }>
+            {Array.from({ length: 12 }).map((_, index) => (
+              <ProductSkeleton key={`skeleton-${index}`} />
+            ))}
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">

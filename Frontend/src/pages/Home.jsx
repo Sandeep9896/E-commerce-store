@@ -8,6 +8,7 @@ import { addToCart } from "../slices/cartSlice";
 import api from "../api/api";
 import SuggestionBox from "../components/SuggestionBox";
 import useAddToCart from "../hooks/useAddToCart";
+import ProductSkeleton from "../components/ProductSkeleton";
 import { ShoppingBag, TrendingUp, Users, Star, ArrowRight, Package, Truck, Shield, ChevronRight, ShoppingCart } from "lucide-react";
 
 
@@ -29,6 +30,7 @@ export default function ProductCarousel() {
         { name: "Sports Products", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767025234/pb4_qutisy.jpg", category: "Sports", description: "Active lifestyle" },
     ];
     const [Products, setProducts] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(true);
 
     const SlideProduct = [
         { id: 1, name: "Smart Watch", image: "https://res.cloudinary.com/dxf4bombp/image/upload/v1767024875/p1_kv7y3q.jpg", price: 5000 },
@@ -109,13 +111,15 @@ export default function ProductCarousel() {
 
     const fetchFeaturedProducts = async () => {
         try {
+            setLoadingProducts(true);
             const response = await api.get('/products/featured');
             console.log("Featured products:", response.data.featuredProducts);
             // Handle featured products as needed
             setProducts(response.data.featuredProducts);
-
         } catch (error) {
             console.error("Error fetching featured products:", error);
+        } finally {
+            setLoadingProducts(false);
         }
     };
     useEffect(() => {
@@ -335,10 +339,15 @@ export default function ProductCarousel() {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-                        {Products.map((product, index) => (
-                            <div
-                                key={product._id}
-                                className="group relative bg-background rounded-2xl border border-border/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col overflow-hidden cursor-pointer"
+                        {loadingProducts ? (
+                            Array.from({ length: 15 }).map((_, index) => (
+                                <ProductSkeleton key={`skeleton-${index}`} />
+                            ))
+                        ) : (
+                            Products.map((product, index) => (
+                                <div
+                                    key={product._id}
+                                    className="group relative bg-background rounded-2xl border border-border/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col overflow-hidden cursor-pointer"
                                 onClick={() => (setActive(active === product.productName ? null : product.productName), handleSelectProduct(product))}
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
@@ -401,7 +410,8 @@ export default function ProductCarousel() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                            ))
+                        )}
                     </div>
 
                     {/* Load More Button */}
